@@ -2,9 +2,9 @@ package cli
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/oaago/component/mysql"
 	"github.com/oaago/component/mysql/gen"
+	"github.com/spf13/cobra"
 	"strings"
 )
 

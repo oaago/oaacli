@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/oaago/oaago/utils"
 	"github.com/oaago/oaago/cmd"
+	"github.com/oaago/oaago/utils"
 )
 
 var BaseName = ""
