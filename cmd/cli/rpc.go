@@ -62,7 +62,7 @@ var GenRpc = &cobra.Command{
 					ProjectUrl := utils.GetCurrentPath()
 					path := ProjectUrl + "rpc/" + arg[0] + "/" + arg[1]
 					genProto([]string{urlm[1]}, "./rpc")
-					cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --govalidators_out=. --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --go-gin_out " + path + " --go-gin_opt=paths=source_relative  " + path + "/" + arg[0] + "_" + arg[1] + ".proto"
+					cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --govalidators_out=. --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --oaago_out " + path + " --go-gin_opt=paths=source_relative  " + path + "/" + arg[0] + "_" + arg[1] + ".proto"
 					fmt.Println(cmd)
 					c := exec.Command("bash", "-c", cmd)
 					output, err := c.CombinedOutput()

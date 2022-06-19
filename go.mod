@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/oaago/cli v0.0.0-20220619103726-2d4392aa24e4
-	github.com/oaago/component v0.0.1
+	github.com/oaago/component v0.0.2-0.20220619112616-6a7f0c4bacbf
 	github.com/pterm/pterm v0.12.41
 	github.com/spf13/cobra v1.4.0
 	github.com/tidwall/gjson v1.14.1

@@ -258,6 +258,8 @@ github.com/oaago/cli v0.0.0-20220619103726-2d4392aa24e4 h1:p6rvVuQyfM4ZzpF9+Gm+U
 github.com/oaago/cli v0.0.0-20220619103726-2d4392aa24e4/go.mod h1:2qZsZBv/PpA1ZDXIi77x9Iicg+sosSACFfSRE2eSPFA=
 github.com/oaago/component v0.0.1 h1:QLFGQclB5L/yEiGTIYdCD2gzKh2IloKnkQ8TrjQBJBo=
 github.com/oaago/component v0.0.1/go.mod h1:ic4c3cRP2ccWvo9vWrvm9Bjxa31mE0qwHQxESWhyhjs=
+github.com/oaago/component v0.0.2-0.20220619112616-6a7f0c4bacbf h1:3J5a90f8oOdMFnrtM8rNN4dA+cOXEmwjcEsXxnJYDWI=
+github.com/oaago/component v0.0.2-0.20220619112616-6a7f0c4bacbf/go.mod h1:/Dkvn9L06mxz8yQUYOybOyh55sJpkrbjK/is5ZhiqJw=
 github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3ve8=
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
 github.com/pelletier/go-toml/v2 v2.0.1 h1:8e3L2cCQzLFi2CR4g7vGFuFxX7Jl1kKX8gW+iV0GUKU=
