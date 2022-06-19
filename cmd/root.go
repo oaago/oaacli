@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/oaago/cli/cmd/cli"
+	"github.com/oaago/oaacli/cmd/cli"
 	"github.com/spf13/cobra"
 )
 
@@ -10,17 +10,12 @@ var (
 	userLicense string
 	rootCmd     = &cobra.Command{
 		Use:     "oaacli",
-		Aliases: []string{"oa"},
+		Aliases: []string{"oaa"},
 		Short:   "A generator for oaacli 别名:  oaa",
 	}
 )
 
-// Execute executes the root command.
-func Execute() error {
-	return rootCmd.Execute()
-}
-
-func init() {
+func Execute() {
 	rootCmd.AddCommand(cli.NewProject)
 	rootCmd.AddCommand(cli.VersionCmd)
 	//rootCmd.AddCommand(cli.GenApi)

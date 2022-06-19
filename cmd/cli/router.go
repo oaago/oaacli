@@ -6,8 +6,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/oaago/cli/cmd/tpl"
-	"github.com/oaago/cli/utils"
+	"github.com/oaago/oaacli/cmd/tpl"
+	"github.com/oaago/oaacli/utils"
 	"github.com/tidwall/gjson"
 )
 

@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/oaago/cli/cmd"
-	"github.com/oaago/cli/utils"
+	"github.com/oaago/oaacli/cmd"
+	"github.com/oaago/oaacli/utils"
 )
 
 var BaseName = ""

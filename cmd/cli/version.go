@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/oaago/cli/utils"
+	"github.com/oaago/oaacli/utils"
 	"github.com/spf13/cobra"
 )
 
 var VersionCmd = &cobra.Command{
 	Use:   "v",
-	Short: "oaacli version 更新时间/更新版本",
+	Short: "oaacli version 更新时间/更新版本1",
 	Run: func(cmd *cobra.Command, args []string) {
 		v := string(utils.RunCmd("git describe --abbrev=0 --tags", true))
 		if strings.Contains(v, "v") {

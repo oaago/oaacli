@@ -2,15 +2,15 @@ package utils
 
 import (
 	"bytes"
-	"github.com/pterm/pterm"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 	"unicode"
+
+	"github.com/pterm/pterm"
 )
 
 func RunCmd(cmd string, shell bool) []byte {
@@ -138,14 +138,6 @@ func GetCurrentPath() string {
 func CLIScreen() {
 	pterm.DefaultCenter.Print(pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(30).Sprint("Oaago CLI"))
 	introSpinner, _ := pterm.DefaultSpinner.WithShowTimer(false).WithRemoveWhenDone(true).Start("Waiting for ...")
-	for i := 3; i > 0; i-- {
-		if i > 1 {
-			introSpinner.UpdateText("Waiting for " + strconv.Itoa(i) + " seconds...")
-		} else {
-			introSpinner.UpdateText("Waiting for " + strconv.Itoa(i) + " second...")
-		}
-		time.Sleep(time.Second)
-	}
-	introSpinner.Stop()
 	pterm.DefaultSection.Println("安装完成，请使用 oaacli 命令进行操作")
+	introSpinner.Stop()
 }

@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/oaago/cli/cmd/tpl"
-	"github.com/oaago/cli/utils"
+	"github.com/oaago/oaacli/cmd/tpl"
+	"github.com/oaago/oaacli/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -21,6 +21,7 @@ var NewProject = &cobra.Command{
 			fmt.Println("命令行错误 请检查使用方式 示例 oaacli new project")
 			return
 		}
+		fmt.Println("开始生成项目........")
 		utils.CLIScreen()
 		ProjectUrl = utils.GetCurrentPath() + args[0]
 		os.Mkdir(ProjectUrl, os.ModePerm)

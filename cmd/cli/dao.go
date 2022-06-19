@@ -6,8 +6,8 @@ import (
 	"strings"
 	"text/template"
 
-	tpl2 "github.com/oaago/cli/cmd/tpl"
-	"github.com/oaago/cli/utils"
+	tpl2 "github.com/oaago/oaacli/cmd/tpl"
+	"github.com/oaago/oaacli/utils"
 	"github.com/spf13/cobra"
 )
 

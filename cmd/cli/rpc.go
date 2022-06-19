@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/oaago/cli/cmd/tpl"
-	"github.com/oaago/cli/utils"
+	"github.com/oaago/oaacli/cmd/tpl"
+	"github.com/oaago/oaacli/utils"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
 )
@@ -61,8 +61,9 @@ var GenRpc = &cobra.Command{
 					os.Mkdir("./rpc/"+arg[0]+"/"+arg[1], os.ModePerm)
 					ProjectUrl := utils.GetCurrentPath()
 					path := ProjectUrl + "rpc/" + arg[0] + "/" + arg[1]
+					fmt.Println("生成go文件")
 					genProto([]string{urlm[1]}, "./rpc")
-					cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --govalidators_out=. --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --oaago_out " + path + " --oaago_opt=paths=source_relative  " + path + "/" + arg[0] + "_" + arg[1] + ".proto"
+					cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --govalidators_out=. --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --oaago_out= " + path + " --oaago_opt=paths=source_relative  " + path + "/" + arg[0] + "_" + arg[1] + ".proto"
 					fmt.Println("生成go文件" + cmd)
 					c := exec.Command("bash", "-c", cmd)
 					output, err := c.CombinedOutput()
@@ -122,7 +123,8 @@ func genRpc(path, dir, fileName, method string) {
 	//os.Mkdir("./internal/api/http/"+dir, os.ModePerm)
 	//os.Mkdir("./internal/api/http/"+dir+"/"+method, os.ModePerm)
 	//goginpath := "./internal/api/http/" + dir + "/" + method
-	cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --proto_path=. --govalidators_out=" + govalidatorpath + " --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --oaago_out " + path + " --oaago_opt=paths=source_relative " + path + "/" + fileName + ".proto"
+	fmt.Println("生成go文件")
+	cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --proto_path=. --govalidators_out=" + govalidatorpath + " --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --oaago_out=" + path + " --oaago_opt=paths=source_relative " + path + "/" + fileName + ".proto"
 	fmt.Println("生成go文件" +cmd)
 	c := exec.Command("bash", "-c", cmd)
 	output, err := c.CombinedOutput()
