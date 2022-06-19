@@ -122,7 +122,7 @@ func genRpc(path, dir, fileName, method string) {
 	//os.Mkdir("./internal/api/http/"+dir, os.ModePerm)
 	//os.Mkdir("./internal/api/http/"+dir+"/"+method, os.ModePerm)
 	//goginpath := "./internal/api/http/" + dir + "/" + method
-	cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --proto_path=. --govalidators_out=" + govalidatorpath + " --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --go-gin_out " + path + " --go-gin_opt=paths=source_relative " + path + "/" + fileName + ".proto"
+	cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --proto_path=. --govalidators_out=" + govalidatorpath + " --go_out=plugins=grpc:" + path + " --go_opt=paths=source_relative --oaago_out= " + path + " --oaago_opt=paths=source_relative " + path + "/" + fileName + ".proto"
 	fmt.Println(cmd)
 	c := exec.Command("bash", "-c", cmd)
 	output, err := c.CombinedOutput()
