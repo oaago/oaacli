@@ -208,18 +208,17 @@ var CONFIGTPL = `server:
   port: 9932
   env: local
 mysql:
-  wx_wxmessage: test_wr:JYALwE14ptr0jmO0@tcp(121.40.183.33:3308)/wx_wxmessage
-  scrm: test_wr:JYALwE14ptr0jmO0@tcp(121.40.183.33:3308)/scrm
-  uc: test_wr:JYALwE14ptr0jmO0@tcp(121.40.183.33:3308)/uc
+  a: root:root@tcp(127.0.0.1:3306)/a
+	b: root:root@tcp(127.0.0.1:3306)/b
 nacos:
-  ipaddr: ops.laodianhuang.cn
+  ipaddr: nacos.com
   logdir: ./nacos
   cachedir: ./nacos
   dataid: %package%
   group: %package%
 redis:
-  addr: 121.40.183.33:6937
-  password: TBQ1pCChcKI4OgkSts
+  addr: 127.0.0.1:6937
+  password: 123456
   db: 15
 `
 
