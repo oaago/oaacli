@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/oaago/oaacli/cmd/tpl"
-	"github.com/oaago/oaacli/utils"
+	"github.com/oaago/oaago/utils"
+	"github.com/oaago/oaago/cmd/tpl"
 	"github.com/spf13/cobra"
 	"github.com/tidwall/gjson"
 )

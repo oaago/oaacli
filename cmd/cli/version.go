@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/oaago/oaacli/utils"
+	"github.com/oaago/oaago/utils"
 	"github.com/spf13/cobra"
 )
 

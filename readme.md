@@ -14,7 +14,7 @@
     ```
     brew install protobuf
    
-    go install github.com/oaago/oaacli@main
+    go install github.com/oaago/oaago@main
     go install github.com/oaago/protoc-gen-oaago@main
     go install github.com/golang/protobuf/protoc-gen-go@v1.5.2
     go install github.com/mwitkow/go-proto-validators/protoc-gen-govalidators@latest

@@ -1,4 +1,4 @@
-module github.com/oaago/oaacli
+module github.com/oaago/oaago
 
 go 1.18
 
