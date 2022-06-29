@@ -7,7 +7,7 @@ package {{.Package}}
 import (
 	"{{.Module}}/internal/service/{{.Package}}/{{.Method}}"
 	"github.com/go-playground/validator/v10"
-	"github.com/oaago/component/logx"
+	"github.com/oaago/cloud/logx"
 	"github.com/oaago/server/oaa"
 	"github.com/oaago/server/oaa/translator"
 )
@@ -47,7 +47,7 @@ var RPCSRVTPL = `package {{.Package}}
 import (
 	"context"
 	rpc_{{.RpcName}}_{{.UpMethod}} "{{.Module}}/internal/api/rpc/{{.RpcName}}/{{.Method}}"
-	"github.com/oaago/component/logx"
+	"github.com/oaago/cloud/logx"
 )
 func (u *{{.UpPackage}}) {{.UpPackage}}{{.UpMethod}}Service(ctx context.Context, request *rpc_{{.RpcName}}_{{.UpMethod}}.{{.UpRpcName}}{{.UpMethod}}Request) (*rpc_{{.RpcName}}_{{.UpMethod}}.{{.UpRpcName}}{{.UpMethod}}Reply, error) {
 	//TODO implement me
@@ -177,8 +177,8 @@ var MAINTPL = `package main
 import (
 	"%package%/internal/consts"
 	"%package%/internal/router"
-	_ "github.com/oaago/component/logx"
-	"github.com/oaago/component/op"
+	_ "github.com/oaago/cloud/logx"
+	"github.com/oaago/cloud/op"
 	"github.com/oaago/server/oaa"
 )
 
@@ -302,8 +302,8 @@ package {{.Package}}
 import (
 	"{{.Module}}/internal/model/{{.Package}}_model"
 	"{{.Module}}/internal/model/{{.Package}}_query"
-	"github.com/oaago/component/mysql"
-	"github.com/oaago/component/redis"
+	"github.com/oaago/cloud/mysql"
+	"github.com/oaago/cloud/redis"
 	"gorm.io/gorm"
 )
 
