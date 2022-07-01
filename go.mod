@@ -3,7 +3,7 @@ module github.com/oaago/oaago
 go 1.18
 
 require (
-	github.com/oaago/cloud v0.0.7
+	github.com/oaago/cloud v0.0.8
 	github.com/pterm/pterm v0.12.42
 	github.com/spf13/cobra v0.0.5
 	github.com/tidwall/gjson v1.14.1
