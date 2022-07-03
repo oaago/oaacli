@@ -125,7 +125,7 @@ import (
 	"github.com/oaago/server/oaa"
 	middleware_http "{{.Module}}/internal/middleware/http"
     {{range $index, $item := .MapHandlerMap}}
-	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/http/{{$item.HttpDir}}/{{$item.UpMethod}}" //{{$item}}
+	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/http/{{$item.HttpDir}}/{{$item.Method}}" //{{$item}}
     {{end}}
 )
 
