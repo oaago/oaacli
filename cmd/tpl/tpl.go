@@ -219,7 +219,6 @@ var CONFIGTPL = `server:
   env: local
 mysql:
   a: root:root@tcp(127.0.0.1:3306)/a
-	b: root:root@tcp(127.0.0.1:3306)/b
 nacos:
   ipaddr: nacos.com
   logdir: ./nacos
@@ -229,7 +228,7 @@ nacos:
 redis:
   addr: 127.0.0.1:6937
   password: 123456
-  db: 15
+  db: 1
 `
 
 var CODETPL = `package consts
