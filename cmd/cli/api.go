@@ -38,7 +38,7 @@ var GenApi = &cobra.Command{
 		fileName := ss[0]
 		if strings.Contains(args[0], "@/") {
 			apiPath := "./internal/api/http/"
-			genApi(apiPath, dirName, dirName, fileName)
+			genApi(apiPath, dirName, dirName, fileName, arg[0])
 		} else if strings.Contains(args[0], "&/") {
 			arg := strings.Split(args[0], "&/")
 			genProto([]string{arg[1]}, "")
@@ -46,7 +46,7 @@ var GenApi = &cobra.Command{
 	},
 }
 
-func genApi(apiPath, dirName, fileName, method string) {
+func genApi(apiPath, dirName, fileName, method, met string) {
 	//fmt.Println(apiPath, dirName, fileName, method, "apiPath, dirName, fileName, method")
 	hasDir, _ := utils.PathExists(utils.Camel2Case(apiPath) + utils.Camel2Case(dirName))
 	if !hasDir {
@@ -63,6 +63,7 @@ func genApi(apiPath, dirName, fileName, method string) {
 		Method    string
 		UpMethod  string
 		Module    string
+		Met       string
 	}
 	module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
 	data := Api{
@@ -71,6 +72,7 @@ func genApi(apiPath, dirName, fileName, method string) {
 		Method:    utils.Lcfirst(method),
 		UpMethod:  utils.Ucfirst(method),
 		Module:    module,
+		Met:       met,
 	}
 	//创建模板
 	fmt.Println("开始api写入模版 " + fileName)

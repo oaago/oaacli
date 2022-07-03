@@ -34,5 +34,5 @@ func init() {
 	rootCmd.AddCommand(cli.GenTable)
 	rootCmd.AddCommand(cli.GenClean)
 	rootCmd.AddCommand(cli.GenRpc)
-	//rootCmd.AddCommand(cli.GenRpcAdd)
+	rootCmd.AddCommand(cli.UpdateAllCmd)
 }

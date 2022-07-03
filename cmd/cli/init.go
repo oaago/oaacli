@@ -57,6 +57,9 @@ func genDef(path string) {
 			os.Mkdir(rpcfileePath, os.ModePerm)
 			os.Mkdir(middlewarePath, os.ModePerm)
 			os.Mkdir(daoPath, os.ModePerm)
+			//
+			utils.RunCmd("go install github.com/swaggo/swag/cmd/swag", true)
+			utils.RunCmd("swag init", true)
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
 				method := arg[0]
@@ -64,7 +67,7 @@ func genDef(path string) {
 				handlerStr := strings.Split(str, "/")
 				fmt.Println(handlerStr, method)
 				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1])
-				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1])
+				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], method)
 				module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
 				genRouter(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], Url)
 			} else if strings.Contains(li, "&/") {

@@ -17,3 +17,17 @@ var UpdateCmd = &cobra.Command{
 		fmt.Println("更新完成")
 	},
 }
+
+var UpdateAllCmd = &cobra.Command{
+	Use:   "updateall",
+	Short: "update oaacli version",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("将会全部自动更新到main分支 请稍等....")
+		utils.RunCmd("go install github.com/oaago/oaago@mian", true)
+		utils.RunCmd("go install github.com/oaago/protoc-gen-oaago@mian", true)
+		utils.RunCmd("go install github.com/oaago/server@mian", true)
+		utils.RunCmd("go install github.com/oaago/cloud@mian", true)
+		utils.RunCmd("go install github.com/oaago/common@mian", true)
+		fmt.Println("更新完成")
+	},
+}

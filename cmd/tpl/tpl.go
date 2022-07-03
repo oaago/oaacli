@@ -12,6 +12,14 @@ import (
 	"github.com/oaago/server/oaa/translator"
 )
 
+// @Summary ping example
+// @Schemes
+// @Description do ping
+// @Tags example
+// @Accept json
+// @Produce json
+// @Success 200 {object} {{.Package}}Srv.{{.UpPackage}}{{.UpMethod}}Res
+// @Router /{{.Package}}/{{.Method}} [{{.Met}}]
 func {{.UpPackage}}{{.UpMethod}}Handler(c *oaa.Ctx) {
 	// 实例化service
 	{{.Package}}Srv := {{.Package}}.NewService{{.UpPackage}}()
@@ -177,6 +185,7 @@ var MAINTPL = `package main
 import (
 	"%package%/internal/consts"
 	"%package%/internal/router"
+	docs "%package%/docs"
 	_ "github.com/oaago/cloud/logx"
 	"github.com/oaago/cloud/op"
 	"github.com/oaago/server/oaa"
@@ -188,6 +197,7 @@ func main() {
 		MapHttpRoute: router.LoadRouterMap,
 		MapRpcRoute:  router.RegisterRpcGenRouter,
 	})
+	docs.SwaggerInfo.BasePath = op.ConfigData.Server.BasePath
 	oaa.Start(r)
 }
 `
