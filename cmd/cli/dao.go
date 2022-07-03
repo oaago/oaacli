@@ -19,12 +19,12 @@ var GenDao = &cobra.Command{
 			fmt.Println("命令行错误 请检查使用方式 示例 ./oaacli dao /aaa/bbb")
 			return
 		}
-		var ss = strings.Split(args[0], "/")
+		var ss = strings.Split(args[0], "@")
 		fmt.Println(args[0])
 		dirName := ss[0]
 		fileName := ss[1]
 		fmt.Println("开始生成dao", "目录是"+dirName, "函数名称是:", dirName+fileName+"service")
-		//genDao("scrm", "t_user", fileName)
+		genDao(dirName, fileName, "service")
 	},
 }
 
@@ -54,7 +54,7 @@ func genDao(dirName, fileName string, method string) {
 		Module:    module,
 	}
 	//创建模板
-	defined := "defined"
+	defined := "dao"
 	tmpl := template.New(defined)
 	//解析模板
 	text := tpl2.DAOTPL
@@ -79,5 +79,4 @@ func genDao(dirName, fileName string, method string) {
 	}
 	fs.Close()
 	fmt.Println("写入dao模版成功 " + filesPath)
-
 }

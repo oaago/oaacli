@@ -27,9 +27,8 @@ func init() {
 	rootCmd.AddCommand(cli.GenInit)
 	//rootCmd.AddCommand(cli.GenType)
 
-	//rootCmd.AddCommand(cli.GenDao)
+	rootCmd.AddCommand(cli.GenDao)
 	rootCmd.AddCommand(cli.GenService)
-	//rootCmd.AddCommand(cli.GenModel)
 	rootCmd.AddCommand(cli.UpdateCmd)
 	//rootCmd.AddCommand(cli.ModuleCmd)
 	rootCmd.AddCommand(cli.GenTable)

@@ -24,8 +24,7 @@ var GenTable = &cobra.Command{
 			dbName = strCli[0]
 			table = strings.Split(strCli[1], ",")
 		} else {
-			dbName = "default"
-			table = strings.Split(str, ",")
+			fmt.Errorf("请配置数据库连接")
 		}
 		db, _ := mysql.NewConnect(dbName)
 		if db == nil {
@@ -39,6 +38,5 @@ var GenTable = &cobra.Command{
 		for _, t := range table {
 			genDao(dbName, t, t)
 		}
-
 	},
 }
