@@ -18,7 +18,7 @@ import (
 // @Tags example
 // @Accept json
 // @Produce json
-// @Success 200 {object} {{.Package}}Srv.{{.UpPackage}}{{.UpMethod}}Res
+// @Success 200 {object} {{.UpPackage}}{{.UpMethod}}Res
 // @Router /{{.Package}}/{{.Method}} [{{.Met}}]
 func {{.UpPackage}}{{.UpMethod}}Handler(c *oaa.Ctx) {
 	// 实例化service
@@ -81,7 +81,7 @@ package {{.Package}}
 type {{.UpPackage}} struct {
 	Service{{.UpPackage}}
 	{{.UpPackage}}{{.UpMethod}}Res
-    {{.UpPackage}}{{.UpMethod}}Req
+  {{.UpPackage}}{{.UpMethod}}Req
 }
 
 type {{.UpPackage}}{{.UpMethod}}Res struct{}

@@ -74,5 +74,6 @@ var NewProject = &cobra.Command{
 		output, _ = exec.Command("go", "mod tidy").Output()
 		fmt.Println(string(output))
 		fmt.Println(`项目初始化完成 请 更新依赖 go mod tidy`)
+		// utils.RunCmd("go install github.com/swaggo/swag/cmd/swag", true)
 	},
 }

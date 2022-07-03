@@ -51,7 +51,13 @@ func genApi(apiPath, dirName, fileName, method, met string) {
 	hasDir, _ := utils.PathExists(utils.Camel2Case(apiPath) + utils.Camel2Case(dirName))
 	if !hasDir {
 		err := os.Mkdir(utils.GetCurrentPath()+utils.Camel2Case(apiPath)+utils.Camel2Case(dirName), os.ModePerm)
-		err = os.Mkdir(utils.GetCurrentPath()+utils.Camel2Case(apiPath)+utils.Camel2Case(dirName)+"/"+utils.Camel2Case(fileName), os.ModePerm)
+		if err != nil {
+			panic("目录初始化失败" + err.Error())
+		}
+	}
+	hasDir1, _ := utils.PathExists(utils.Camel2Case(apiPath) + utils.Camel2Case(dirName) + "/" + utils.Camel2Case(fileName))
+	if !hasDir1 {
+		err := os.Mkdir(utils.GetCurrentPath()+utils.Camel2Case(apiPath)+utils.Camel2Case(dirName)+"/"+utils.Camel2Case(fileName), os.ModePerm)
 		if err != nil {
 			panic("目录初始化失败" + err.Error())
 		}
@@ -83,7 +89,7 @@ func genApi(apiPath, dirName, fileName, method, met string) {
 	tpl, err := tmpl.Parse(text)
 	if err != nil {
 		panic(err)
-	}
+	}	
 	//渲染输出
 	filesName := utils.Camel2Case(apiPath) + utils.Camel2Case(dirName) + "/" + utils.Camel2Case(fileName) + "/" + utils.Camel2Case(dirName) + "_" + utils.Camel2Case(fileName) + "_handler.go"
 	exists, err := utils.PathExists(strings.ToLower(filesName))

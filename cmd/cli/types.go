@@ -63,7 +63,7 @@ func genType(servicePath, dirName, method, fun string) {
 		UpMethod:  utils.Ucfirst(method),
 	}
 	//创建模板
-	defined := "defined"
+	defined := "types"
 	tmpl := template.New(defined)
 	//解析模板
 	text := tpl2.TYPESTPL
@@ -75,16 +75,26 @@ func genType(servicePath, dirName, method, fun string) {
 	hasDir, _ := utils.PathExists(typesDir)
 	if !hasDir {
 		err := os.Mkdir(typesDir, os.ModePerm)
-		err = os.Mkdir(typesDir+"/"+utils.Camel2Case(method), os.ModePerm)
 		if err != nil {
 			panic("目录初始化失败" + err.Error())
 		}
 	}
+	hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method))
+	if !hasDir1 {
+		e := os.Mkdir(typesDir + "/" + utils.Camel2Case(method), os.ModePerm)
+		if e != nil {
+			panic("目录初始化失败" + e.Error())
+		}
+	}
 	//渲染输出
-	fs, _ := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
-	err = tpl.ExecuteTemplate(fs, defined, data)
-	if err != nil {
-		panic(err.Error())
+	fs, e := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
+	if e != nil {
+		fmt.Println("type 文件写入失败" + e.Error())
+	}
+	fmt.Println(typesDir, utils.Camel2Case(method) + "/types.go")
+	tplerr := tpl.ExecuteTemplate(fs, defined, data)
+	if tplerr != nil {
+		panic(tplerr.Error())
 	}
 	fs.Close()
 	fmt.Println("写入types模版成功 " + typesDir)

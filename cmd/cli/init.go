@@ -57,9 +57,6 @@ func genDef(path string) {
 			os.Mkdir(rpcfileePath, os.ModePerm)
 			os.Mkdir(middlewarePath, os.ModePerm)
 			os.Mkdir(daoPath, os.ModePerm)
-			//
-			utils.RunCmd("go install github.com/swaggo/swag/cmd/swag", true)
-			utils.RunCmd("swag init", true)
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
 				method := arg[0]
