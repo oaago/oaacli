@@ -188,6 +188,7 @@ import (
 	docs "%package%/docs"
 	_ "github.com/oaago/cloud/logx"
 	"github.com/oaago/cloud/op"
+	_ "github.com/oaago/cloud/preload"
 	"github.com/oaago/server/oaa"
 )
 
