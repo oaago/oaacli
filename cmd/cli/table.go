@@ -24,8 +24,10 @@ var GenTable = &cobra.Command{
 			dbName = strCli[0]
 			table = strings.Split(strCli[1], ",")
 		} else {
-			fmt.Errorf("请配置数据库连接")
+			panic("请配置数据库连接")
 		}
+		return
+		fmt.Println("测试数据库。。。。。")
 		db, _ := mysql.NewConnect(dbName)
 		if db == nil {
 			panic(db.Error.Error() + "无法获取mysql")

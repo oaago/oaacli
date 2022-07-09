@@ -20,10 +20,11 @@ var DockerFileCmd = &cobra.Command{
 	Short: "自动生成 dockerfile",
 	Run: func(cmd *cobra.Command, args []string) {
 		type DockerFile struct {
-			Port   int64
-			Module string
+			Port      int64
+			Module    string
+			HarborUrl string
 		}
-		module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
+		Module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
 		Op := viper.New()
 		path, err := os.Getwd()
 		if err != nil {
@@ -32,9 +33,13 @@ var DockerFileCmd = &cobra.Command{
 		Op.AddConfigPath(path)   //设置读取的文件路径
 		Op.SetConfigName("app")  //设置读取的文件名
 		Op.SetConfigType("yaml") //设置文件的类型
+		Port := Op.GetInt64("server.port")
+		if Port == 0 {
+			panic("docker 生成的配置文件必须有 port")
+		}
 		data := DockerFile{
-			Module: module,
-			Port:   Op.GetInt64("server.port"),
+			Module: Module,
+			Port:   Port,
 		}
 		//创建模板
 		dockerfile := "dockerfile"
@@ -64,8 +69,15 @@ var DockerBuildCmd = &cobra.Command{
 		var version string
 		fmt.Println("请输入版本号，输入后即将打包(例如v1.0.0)：")
 		fmt.Scanln(&version)
+		Op := viper.New()
+		path, _ := os.Getwd()
+		Op.AddConfigPath(path)   //设置读取的文件路径
+		Op.SetConfigName("app")  //设置读取的文件名
+		Op.SetConfigType("yaml") //设置文件的类型
+		fmt.Println(Op.GetString("docker.harbor.url"))
+		HarborUrl := strings.Replace(Op.GetString("docker.harbor.url"), "http", "", 1)
 		module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
-		execCommand("docker", []string{"build", ".", "-t", "oaago/" + module + ":" + version, "-f", utils.GetCurrentPath() + "DockerFile"})
+		execCommand("docker", []string{"build", ".", "-t", HarborUrl + "/oaago/" + module + ":" + version, "-f", utils.GetCurrentPath() + "DockerFile"})
 	},
 }
 
