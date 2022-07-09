@@ -35,4 +35,6 @@ func init() {
 	rootCmd.AddCommand(cli.GenClean)
 	// rootCmd.AddCommand(cli.GenRpc)
 	rootCmd.AddCommand(cli.UpdateAllCmd)
+	rootCmd.AddCommand(cli.DockerFileCmd)
+	rootCmd.AddCommand(cli.DockerBuildCmd)
 }
