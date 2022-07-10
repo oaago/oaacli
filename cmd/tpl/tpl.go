@@ -332,7 +332,7 @@ func (Gid) BB(c*oaa.Ctx) {
 }`
 
 var DAOTPL = `
-package {{.Package}}
+package dao_{{.Package}}
 
 import (
 	"{{.Module}}/internal/model/{{.Package}}_model"

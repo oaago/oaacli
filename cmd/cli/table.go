@@ -10,7 +10,7 @@ import (
 
 var GenTable = &cobra.Command{
 	Use:   "table",
-	Short: "示例 oaacli table scrm@t_user,user_base 在目录 ./internal/model 生成一个 model + query",
+	Short: "示例 oaago table scrm@t_user,user_base 在目录 ./internal/model 生成一个 model + query",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			fmt.Println("命令行错误 请检查使用方式 示例 oaacli table scrm@t_user,user_base")
@@ -26,8 +26,6 @@ var GenTable = &cobra.Command{
 		} else {
 			panic("请配置数据库连接")
 		}
-		return
-		fmt.Println("测试数据库。。。。。")
 		db, _ := mysql.NewConnect(dbName)
 		if db == nil {
 			panic(db.Error.Error() + "无法获取mysql")

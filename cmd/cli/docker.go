@@ -62,7 +62,7 @@ var DockerFileCmd = &cobra.Command{
 
 var DockerBuildCmd = &cobra.Command{
 	Use:   "dockerbuild",
-	Short: "打包成docker镜像 oaago dockerbuild v1.0.1",
+	Short: "打包成docker镜像 oaago dockerbuild v1.0.1 -p(push 到harbor) -r (docker run))",
 	Run: func(cmd *cobra.Command, args []string) {
 		var version string
 		Op := viper.New()
@@ -90,10 +90,14 @@ var DockerBuildCmd = &cobra.Command{
 		for _, arg := range args {
 			argStr = argStr + arg
 		}
+		fmt.Println("build end....")
 		if strings.Contains(argStr, "-p") {
 			pushOut := utils.RunCmd("docker push "+HarborUrl+"/oaago/"+module+":"+version, true)
 			fmt.Println(string(pushOut))
 		}
-		fmt.Println("build end....")
+		if strings.Contains(argStr, "-r") {
+			pushOut := utils.RunCmd("docker run --name  "+module+" -d "+HarborUrl+"/oaago/"+module+":"+version, true)
+			fmt.Println(string(pushOut))
+		}
 	},
 }

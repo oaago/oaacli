@@ -31,10 +31,10 @@ var GenDao = &cobra.Command{
 func genDao(dirName, fileName string, method string) {
 	daoPath := "./internal/dao/"
 	//模板变量
-	filesPath := strings.ToLower(utils.Camel2Case(daoPath+dirName) + "/" + fileName + ".go")
+	filesPath := strings.ToLower(utils.Camel2Case(daoPath+"dao_"+dirName) + "/" + fileName + ".go")
 	exists, _ := utils.PathExists(filesPath)
 	if exists {
-		fmt.Println("service文件已经存在 不会继续创建", filesPath)
+		fmt.Println("dao文件已经存在 不会继续创建", filesPath)
 		return
 	}
 	//模板变量
@@ -62,7 +62,7 @@ func genDao(dirName, fileName string, method string) {
 	if err != nil {
 		panic(err.Error())
 	}
-	daoDir := utils.Camel2Case(daoPath) + utils.Camel2Case(dirName)
+	daoDir := utils.Camel2Case(daoPath) + utils.Camel2Case("dao_"+dirName)
 	hasDir, _ := utils.PathExists(daoDir)
 	if !hasDir {
 		err := os.Mkdir(daoDir, os.ModePerm)
