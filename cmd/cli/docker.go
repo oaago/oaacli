@@ -86,6 +86,14 @@ var DockerBuildCmd = &cobra.Command{
 		ou := utils.RunCmd("docker build . -t "+HarborUrl+"/oaago/"+module+":"+version+" -f "+utils.GetCurrentPath()+"DockerFile", true)
 		fmt.Println(string(ou))
 		fmt.Println(string(out))
+		var argStr string
+		for _, arg := range args {
+			argStr = argStr + arg
+		}
+		if strings.Contains(argStr, "-p") {
+			pushOut := utils.RunCmd("docker push "+HarborUrl+"/oaago/"+module+":"+version, true)
+			fmt.Println(string(pushOut))
+		}
 		fmt.Println("build end....")
 	},
 }
