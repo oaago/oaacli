@@ -3,6 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/oaago/oaago/cmd/tpl"
 	"os"
 	"regexp"
 	"strings"
@@ -72,15 +73,25 @@ func genDef(path string) {
 				ag := strings.Split(arg[1], "/")
 				str := []string{ag[0] + "/" + ag[1]}
 				genProto(str, "")
-				genRpc(ProjectUrl+"internal/api/rpc/"+ag[0]+"/"+ag[1], ag[0], ag[0]+"_"+ag[1], ag[1])
+				//genRpc(ProjectUrl+"./rpc/"+ag[0]+"/"+ag[1], ag[0], ag[0]+"_"+ag[1], ag[1])
 				fmt.Println("proto 编译完成")
-				genRpcServer(utils.Camel2Case("rpc_"+ag[0]), ag[1], ag[1], ag[0])
+				genRpcServer(utils.Camel2Case(ag[0]), ag[1], ag[1], ag[0])
 				fmt.Println("proto service 生成完成")
 				module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
 				genRpcRouter(module, utils.Ucfirst(ag[0])+utils.Ucfirst(ag[1]), ag[0], Url)
+				_, err := os.Stat("./powerproto.yaml")
+				if err != nil {
+					pow, _ := os.Create("./powerproto.yaml")
+					pow.WriteString(tpl.PowerprotoTpl)
+					pow.Close()
+				}
 			} else {
 				panic("不符合规范 http get@/aa/bb  rpc get&/aa/bb")
 			}
 		}
 	}
+	modOut := utils.RunCmd("go mod tidy", true)
+	fmt.Println(string(modOut))
+	swagOut := utils.RunCmd("swag init", true)
+	fmt.Println(string(swagOut))
 }

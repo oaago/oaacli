@@ -38,6 +38,7 @@ var NewProject = &cobra.Command{
 		os.Mkdir(ProjectUrl+"/internal/middleware", os.ModePerm)
 		os.Mkdir(ProjectUrl+"/internal/middleware/http", os.ModePerm)
 		os.Mkdir(ProjectUrl+"/internal/middleware/rpc", os.ModePerm)
+		os.Mkdir(ProjectUrl+"/rpc", os.ModePerm)
 		midFile, err := os.Create(ProjectUrl + "/internal/middleware/http/types.go")
 		midFile.WriteString(tpl.MIDTPL)
 		midFile.Close()
@@ -73,7 +74,9 @@ var NewProject = &cobra.Command{
 		fmt.Println("更新 " + args[0] + " 项目依赖   go mod tidy")
 		output, _ = exec.Command("go", "mod tidy").Output()
 		fmt.Println(string(output))
-		fmt.Println(`项目初始化完成 请 更新依赖 go mod tidy`)
-		// utils.RunCmd("go install github.com/swaggo/swag/cmd/swag", true)
+		fmt.Println(`项目初始化完成 开始更新依赖`)
+		modOut := utils.RunCmd("go mod tidy", true)
+		fmt.Println(string(modOut))
+		fmt.Println("初始化完成")
 	},
 }

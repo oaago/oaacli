@@ -86,9 +86,9 @@ func genServer(dirName, fileName, method string) {
 }
 
 func genRpcServer(dirName, fileName, method, dir string) {
-	apiPath := "./internal/service/"
+	apiPath := "./internal/service/rpc/"
 	// 检测是否存在types
-	typePath := strings.ToLower(utils.Camel2Case(apiPath) + utils.Camel2Case(dirName) + "/" + "typs.go")
+	typePath := strings.ToLower(utils.Camel2Case(apiPath) + utils.Camel2Case(dirName) + "/" + fileName + "/types.go")
 	exist, _ := utils.PathExists(typePath)
 	if !exist {
 		fmt.Println("types文件不存在 将会自动生成", typePath)

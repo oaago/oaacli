@@ -81,7 +81,7 @@ func genType(servicePath, dirName, method, fun string) {
 	}
 	hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method))
 	if !hasDir1 {
-		e := os.Mkdir(typesDir + "/" + utils.Camel2Case(method), os.ModePerm)
+		e := os.Mkdir(typesDir+"/"+utils.Camel2Case(method), os.ModePerm)
 		if e != nil {
 			panic("目录初始化失败" + e.Error())
 		}
@@ -91,7 +91,7 @@ func genType(servicePath, dirName, method, fun string) {
 	if e != nil {
 		fmt.Println("type 文件写入失败" + e.Error())
 	}
-	fmt.Println(typesDir, utils.Camel2Case(method) + "/types.go")
+	fmt.Println(typesDir, utils.Camel2Case(method)+"/types.go")
 	tplerr := tpl.ExecuteTemplate(fs, defined, data)
 	if tplerr != nil {
 		panic(tplerr.Error())
@@ -108,16 +108,19 @@ func genRpcType(servicePath, dirName, method, fun string) {
 		Method    string
 		UpMethod  string
 		Func      string
+		Module    string
 	}
+	module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
 	data := Defined{
 		Package:   utils.Camel2Case(dirName),
 		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
 		Method:    utils.Lcfirst(method),
 		Func:      utils.Ucfirst(fun),
+		Module:    module,
 		UpMethod:  utils.Ucfirst(method),
 	}
 	//创建模板
-	defined := "defined"
+	defined := "rpctype"
 	tmpl := template.New(defined)
 	//解析模板
 	text := tpl2.RpcTYPESTPL
