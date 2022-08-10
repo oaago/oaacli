@@ -15,7 +15,7 @@ var (
 	projectType    = "a"
 	configFile     = "./oaa.json"
 	servicePath    = "./internal/service/"
-	apifilepath    = "./internal/api/http/"
+	apifilepath    = "./internal/api/"
 	rpcfileePath   = "./internal/api/rpc/"
 	routerPath     = "./internal/router/"
 	middlewarePath = "./internal/middleware/"

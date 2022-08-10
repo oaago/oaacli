@@ -38,6 +38,7 @@ func genDef() {
 	hasRpc := false
 	for _, team := range mapurl {
 		for _, lis := range team {
+			// 先验证规则是否合法
 			httpReg := regexp.MustCompile(`(get|post|put)@/[A-Za-z0-9]{0,20}/[A-Za-z0-9]{0,20}`)
 			rpcReg := regexp.MustCompile(`(get|post|put)&/[A-Za-z0-9]{0,20}/[A-Za-z0-9]{0,20}`)
 			lim := strings.Split(strings.ToLower(lis), "|")
@@ -46,6 +47,20 @@ func genDef() {
 			result2 := rpcReg.FindAllStringSubmatch(li, -1)
 			if len(result1) == 0 && len(result2) == 0 {
 				panic(li + " 不符合规范请检查之后在使用")
+			}
+			// 根据规则获取不同的参数
+			// 1. @ 代表的是http通信 请求模式@请求地址
+			// 2. & 代表的是rpc通信
+			// 3. | 代表的是中间件
+			// 4. ** 代表的是 备注 对于接口的描述
+			var dec string
+			decStr := strings.Split(li, "**")
+			if len(decStr) == 2 {
+				// 对于接口的描述
+				dec = decStr[1]
+				fmt.Println(li, "li1======")
+				li = strings.Replace(li, "**"+decStr[1], "", 1)
+				fmt.Println(li, "li2======")
 			}
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
@@ -70,8 +85,9 @@ func genDef() {
 				var ss = strings.Split(arg[1], "/")
 				dirName := ss[0]
 				fileName := ss[0]
-				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], mothedMap)
+				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap)
 				fmt.Println("开始装载路由...." + utils.Camel2Case(dirName) + fileName)
+				fmt.Println(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], str, "ccccc")
 				genRouter(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], str)
 				fmt.Println("http初始化成功！")
 			} else if strings.Contains(li, "&/") {

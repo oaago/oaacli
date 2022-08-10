@@ -6,7 +6,7 @@ import (
 	"github.com/oaago/server/oaa"
 	middleware_http "{{.Module}}/internal/middleware/http"
     {{range $index, $item := .MapHandlerMapImport}}
-	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/http/{{$item.HttpDir}}/{{$item.Method}}" //{{$item}}{{end}}
+	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/{{$item.HttpDir}}/{{$item.Method}}" //{{$item}}{{end}}
 )
 type ConfigRouter oaa.ConfigRouter
 func LoadRouterMap() oaa.MapHttpRoute {

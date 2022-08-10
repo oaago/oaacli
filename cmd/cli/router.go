@@ -45,6 +45,11 @@ func genRouter(module, handler, pack, url string) {
 		if len(lis) != 2 {
 			panic(datum.Str + "不符合规则")
 		}
+		// 去除备注
+		decStr := strings.Split(lis[1], "**")
+		if len(decStr) == 2 {
+			lis[1] = strings.Replace(lis[1], "**"+decStr[1], "", 1)
+		}
 		lim := strings.Split(lis[1], "|")
 		dir := lim[0]
 		hand := strings.Split(dir, "/")
