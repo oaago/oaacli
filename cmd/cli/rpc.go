@@ -45,8 +45,11 @@ func genProto(args []string, path string) {
 		os.Mkdir(path+"/"+arg[0], os.ModePerm)
 		os.Mkdir(path+"/"+arg[0]+"/"+arg[1], os.ModePerm)
 		protoPath := path + arg[0] + "/" + arg[1] + "/" + arg[0] + "_" + arg[1] + ".proto"
-		fmt.Println("初始化proto文件", protoPath)
-		protoFile, err = os.Create(protoPath)
+		exists, err := utils.PathExists(strings.ToLower(protoPath))
+		if err != nil || exists {
+			fmt.Println("proto文件不存在 即将创建文件", protoPath)
+			protoFile, err = os.Create(protoPath)
+		}
 	} else {
 		fmt.Println("gen创建文件", "./rpc/"+arg[0]+"/"+arg[1]+"/"+arg[0]+"_"+arg[1]+".proto")
 		protoFile, err = os.Create("./rpc/" + arg[0] + "/" + arg[1] + "/" + arg[0] + "_" + arg[1] + ".proto")
@@ -62,7 +65,7 @@ func genProto(args []string, path string) {
 	}
 	fmt.Println("proto文件生成成功")
 	buf := new(bytes.Buffer)
-	tmpl, err := template.New("gen-proto").Parse(strings.TrimSpace(tpl.PROTOTPL))
+	tmpl, err := template.New("gen-proto").Parse(strings.TrimSpace(tpl.ProtoTpl))
 	if err != nil {
 		panic(err)
 	}
@@ -78,9 +81,6 @@ func genRpc(path, dir, fileName, method string) {
 	fmt.Println("rpc文件名称:" + fileName)
 	govalidatorpath := "./internal/api/rpc"
 	gorpcpath := "./rpc/"
-	//os.Mkdir("./internal/api/http/"+dir, os.ModePerm)
-	//os.Mkdir("./internal/api/http/"+dir+"/"+method, os.ModePerm)
-	//goginpath := "./internal/api/http/" + dir + "/" + method
 	fmt.Println("生成go文件")
 	//cmd := "protoc -I " + path + " --proto_path=${GOPATH}/pkg/mod  --proto_path=${GOPATH}/pkg/mod/github.com/gogo/protobuf@v1.3.2 --proto_path=. --govalidators_out=" + govalidatorpath + " --go-grpc_out=plugins=grpc:" + path + " --oaago_out=" + path + " --oaago_opt=paths=source_relative " + path + "/" + fileName + ".proto"
 	cmd := `protoc -I ./ -I ` + gorpcpath + ` \

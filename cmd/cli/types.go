@@ -8,43 +8,7 @@ import (
 
 	tpl2 "github.com/oaago/oaago/cmd/tpl"
 	"github.com/oaago/oaago/utils"
-	"github.com/spf13/cobra"
 )
-
-var GenType = &cobra.Command{
-	Use:   "types",
-	Short: "oaacli types 生成文件",
-	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) < 1 {
-			fmt.Println("命令行错误 请检查使用方式 示例 ./oaacli defined get@/aaa/bbb s")
-			return
-		}
-		arg := strings.Split(args[0], "@/")
-		if len(arg) < 2 {
-			fmt.Println("命令行错误  %s不正确", arg[0])
-			return
-		}
-		method := "get,post,delete,put,head,options"
-		has := strings.Contains(method, arg[0])
-		if !has {
-			fmt.Printf("命令行错误  " + arg[0] + "不正确 没有对应的 method\n")
-			return
-		}
-
-		var ss = strings.Split(strings.ToLower(arg[1]), "/")
-		fmt.Println(ss, "ss")
-		dirName := ss[0]
-		servicePath := "./internal/service/"
-		ValidDefined(utils.Camel2Case(servicePath) + utils.Camel2Case(dirName))
-		exists, err := utils.PathExists(utils.Camel2Case(servicePath) + utils.Camel2Case(dirName) + "/types.go")
-		if err != nil || exists {
-			fmt.Println("已存在文件无法生成", utils.Camel2Case(servicePath)+utils.Camel2Case(dirName)+"/types.go")
-			return
-		}
-		fmt.Println("开始生成目录", utils.Camel2Case(servicePath)+utils.Camel2Case(dirName)+"/types.go")
-		genType(servicePath, utils.Camel2Case(dirName), arg[0], ss[1])
-	},
-}
 
 func genType(servicePath, dirName, method, fun string) {
 	//模板变量
@@ -66,7 +30,7 @@ func genType(servicePath, dirName, method, fun string) {
 	defined := "types"
 	tmpl := template.New(defined)
 	//解析模板
-	text := tpl2.TYPESTPL
+	text := tpl2.HttpTypesTpl
 	tpl, err := tmpl.Parse(text)
 	if err != nil {
 		panic(err.Error())
@@ -94,7 +58,7 @@ func genType(servicePath, dirName, method, fun string) {
 	fmt.Println(typesDir, utils.Camel2Case(method)+"/types.go")
 	tplerr := tpl.ExecuteTemplate(fs, defined, data)
 	if tplerr != nil {
-		panic(tplerr.Error())
+		panic(tplerr)
 	}
 	fs.Close()
 	fmt.Println("写入types模版成功 " + typesDir)
@@ -123,10 +87,10 @@ func genRpcType(servicePath, dirName, method, fun string) {
 	defined := "rpctype"
 	tmpl := template.New(defined)
 	//解析模板
-	text := tpl2.RpcTYPESTPL
+	text := tpl2.RpcTypesTpl
 	tpl, err := tmpl.Parse(text)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 	typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(dirName)
 	hasDir, _ := utils.PathExists(typesDir)
@@ -141,7 +105,7 @@ func genRpcType(servicePath, dirName, method, fun string) {
 	fs, _ := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
 	err = tpl.ExecuteTemplate(fs, defined, data)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 	fs.Close()
 	fmt.Println("写入types模版成功 " + typesDir)

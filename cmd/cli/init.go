@@ -3,7 +3,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/oaago/oaago/cmd/tpl"
+	tpl "github.com/oaago/oaago/cmd/tpl"
 	"os"
 	"regexp"
 	"strings"
@@ -20,78 +20,99 @@ var GenInit = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		uri := "./oaa.json"
-		if len(args) == 1 {
-			uri = args[0]
+		if len(args) == 0 {
+			genDef()
 		}
-		genDef(uri)
 	},
 }
 
-func genDef(path string) {
-	data, err := os.ReadFile(path)
+func genDef() {
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
 	var mapurl map[string][]string
 	json.Unmarshal(data, &mapurl)
+	// 初始化目录
+	initFile(module)
+	hasRpc := false
 	for _, team := range mapurl {
 		for _, lis := range team {
 			httpReg := regexp.MustCompile(`(get|post|put)@/[A-Za-z0-9]{0,20}/[A-Za-z0-9]{0,20}`)
 			rpcReg := regexp.MustCompile(`(get|post|put)&/[A-Za-z0-9]{0,20}/[A-Za-z0-9]{0,20}`)
-			lim := strings.Split(lis, "|")
+			lim := strings.Split(strings.ToLower(lis), "|")
 			li := lim[0]
 			result1 := httpReg.FindAllStringSubmatch(li, -1)
 			result2 := rpcReg.FindAllStringSubmatch(li, -1)
 			if len(result1) == 0 && len(result2) == 0 {
 				panic(li + " 不符合规范请检查之后在使用")
 			}
-			apifilepath := "./internal/api/http/"
-			rpcfileePath := "./internal/api/rpc/"
-			routerPath := "./internal/router/"
-			middlewarePath := "./internal/middleware/"
-			servicePath := "./internal/service/"
-			daoPath := "./internal/dao/"
-			os.Mkdir(apifilepath, os.ModePerm)
-			os.Mkdir(servicePath, os.ModePerm)
-			os.Mkdir(routerPath, os.ModePerm)
-			os.Mkdir(rpcfileePath, os.ModePerm)
-			os.Mkdir(middlewarePath, os.ModePerm)
-			os.Mkdir(daoPath, os.ModePerm)
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
+				if arg[0] == "*" {
+					arg[0] = "get,post,delete,put"
+				}
 				method := arg[0]
 				str := arg[1]
 				handlerStr := strings.Split(str, "/")
 				fmt.Println(handlerStr, method)
 				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1])
-				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], method)
-				module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
-				genRouter(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], Url)
+				// arg[0] 代表的是请求方法 arg[1] 请求路径
+				methods := "get,post,delete,put,head,options"
+				mothedMap := strings.Split(arg[0], ",")
+				for _, s := range mothedMap {
+					has := strings.Contains(methods, s)
+					if !has {
+						fmt.Printf("检测出请求方式" + arg[0] + "存在" + s + "不正确 没有对应的 method\n")
+						return
+					}
+				}
+				var ss = strings.Split(arg[1], "/")
+				dirName := ss[0]
+				fileName := ss[0]
+				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], mothedMap)
+				fmt.Println("开始装载路由...." + utils.Camel2Case(dirName) + fileName)
+				genRouter(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], str)
+				fmt.Println("http初始化成功！")
 			} else if strings.Contains(li, "&/") {
+				hasRpc = true
 				arg := strings.Split(li, "&/")
 				ag := strings.Split(arg[1], "/")
 				str := []string{ag[0] + "/" + ag[1]}
 				genProto(str, "")
-				//genRpc(ProjectUrl+"./rpc/"+ag[0]+"/"+ag[1], ag[0], ag[0]+"_"+ag[1], ag[1])
 				fmt.Println("proto 编译完成")
 				genRpcServer(utils.Camel2Case(ag[0]), ag[1], ag[1], ag[0])
 				fmt.Println("proto service 生成完成")
 				module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
-				genRpcRouter(module, utils.Ucfirst(ag[0])+utils.Ucfirst(ag[1]), ag[0], Url)
+				genRpcRouter(module, utils.Ucfirst(ag[0])+utils.Ucfirst(ag[1]), ag[0], arg[1])
 				_, err := os.Stat("./powerproto.yaml")
 				if err != nil {
 					pow, _ := os.Create("./powerproto.yaml")
 					pow.WriteString(tpl.PowerprotoTpl)
 					pow.Close()
 				}
+				fmt.Println("rpc初始化成功！")
 			} else {
 				panic("不符合规范 http get@/aa/bb  rpc get&/aa/bb")
 			}
 		}
 	}
+	if hasRpc {
+		mainFile, err := os.Create("main.go")
+		if err != nil {
+			panic(err.Error())
+		}
+		// 处理包名称
+		def := strings.Replace(tpl.MainTpl, "%package%", module, -1)
+		// 处理是否增加rpc server
+		newTpl := strings.Replace(def, "//route.RpcServer", "route.RpcServer", 1)
+		mainFile.WriteString(newTpl)
+		mainFile.Close()
+		fmt.Println("新增rpc处理模式")
+	}
 	modOut := utils.RunCmd("go mod tidy", true)
 	fmt.Println(string(modOut))
 	swagOut := utils.RunCmd("swag init", true)
 	fmt.Println(string(swagOut))
+	fmt.Println("初始化完成")
 }

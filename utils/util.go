@@ -136,7 +136,7 @@ func GetCurrentPath() string {
 }
 
 func CLIScreen() {
-	pterm.DefaultCenter.Print(pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(30).Sprint("Oaago CLI"))
+	pterm.DefaultCenter.Print(pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Sprint("Oaago CLI"))
 	introSpinner, _ := pterm.DefaultSpinner.WithShowTimer(false).WithRemoveWhenDone(true).Start("Waiting for ...")
 	pterm.DefaultSection.Println("安装完成，请使用 oaacli 命令进行操作")
 	introSpinner.Stop()

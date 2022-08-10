@@ -43,12 +43,13 @@ var DockerFileCmd = &cobra.Command{
 		dockerfile := "dockerfile"
 		tmpl := template.New(dockerfile)
 		//解析模板
-		text := tpl2.DockerFile
+		text := tpl2.DockerFileTpl
 		tpl, err := tmpl.Parse(text)
 		if err != nil {
 			panic(err.Error())
 		}
 		//渲染输出
+		fmt.Println("强制生成dockerfile")
 		utils.RunCmd("rm -rf ./DockerFile", true)
 		fs, _ := os.Create("DockerFile")
 		err = tpl.ExecuteTemplate(fs, dockerfile, data)
@@ -56,7 +57,7 @@ var DockerFileCmd = &cobra.Command{
 			panic(err.Error())
 		}
 		fs.Close()
-		fmt.Println("写入dockerfile模版成功 ")
+		fmt.Println("dockerfile模版生成成功 ")
 	},
 }
 
@@ -81,7 +82,6 @@ var DockerBuildCmd = &cobra.Command{
 		HarborUrl := strings.Replace(Op.GetString("docker.harbor.url"), "http", "", 1)
 		module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
 		fmt.Println("building....")
-		//execCommand("docker", []string{"build", ".", "-t", HarborUrl + "/oaago/" + module + ":" + version, "-f", utils.GetCurrentPath() + "DockerFile"})
 		out := utils.RunCmd("docker image ls |grep "+HarborUrl+"/oaago/"+module+":", true)
 		ou := utils.RunCmd("docker build . -t "+HarborUrl+"/oaago/"+module+":"+version+" -f "+utils.GetCurrentPath()+"DockerFile", true)
 		fmt.Println(string(ou))

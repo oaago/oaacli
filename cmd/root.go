@@ -23,17 +23,10 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(cli.NewProject)
 	rootCmd.AddCommand(cli.VersionCmd)
-	//rootCmd.AddCommand(cli.GenApi)
 	rootCmd.AddCommand(cli.GenInit)
-	//rootCmd.AddCommand(cli.GenType)
-
-	rootCmd.AddCommand(cli.GenDao)
-	// rootCmd.AddCommand(cli.GenService)
 	rootCmd.AddCommand(cli.UpdateCmd)
-	//rootCmd.AddCommand(cli.ModuleCmd)
 	rootCmd.AddCommand(cli.GenTable)
 	rootCmd.AddCommand(cli.GenClean)
-	// rootCmd.AddCommand(cli.GenRpc)
 	rootCmd.AddCommand(cli.UpdateAllCmd)
 	rootCmd.AddCommand(cli.DockerFileCmd)
 	rootCmd.AddCommand(cli.DockerBuildCmd)

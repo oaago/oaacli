@@ -10,7 +10,7 @@ import (
 
 var GenTable = &cobra.Command{
 	Use:   "table",
-	Short: "示例 oaago table scrm@t_user,user_base 在目录 ./internal/model 生成一个 model + query",
+	Short: "示例 oaago table scrm@user 在目录 ./internal/model 生成一个 model + query",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			fmt.Println("命令行错误 请检查使用方式 示例 oaacli table scrm@t_user,user_base")
@@ -22,6 +22,20 @@ var GenTable = &cobra.Command{
 		table := make([]string, 0)
 		if len(strCli) == 2 {
 			dbName = strCli[0]
+			if strCli[1] == "-" {
+				db, _ := mysql.NewConnect(dbName)
+				rows, _ := db.Raw("show tables").Rows()
+				defer rows.Close()
+				var tables = make([]string, 0)
+				for rows.Next() {
+					var name string
+					rows.Scan(&name)
+					tables = append(tables, name)
+					genDao(dbName, name, name)
+				}
+				gen.GenStruct(dbName, tables)
+				return
+			}
 			table = strings.Split(strCli[1], ",")
 		} else {
 			panic("请配置数据库连接")

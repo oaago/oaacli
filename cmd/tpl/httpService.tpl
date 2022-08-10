@@ -1,0 +1,14 @@
+package {{.Package}}
+{{if eq .Upmet "Get"}}
+func (u *{{.UpPackage}}{{.UpMethod}}Service) {{.Upmet}}{{.UpPackage}}{{.UpMethod}}Service() error {
+	return nil
+}
+{{else if eq .Upmet "Delete"}}
+func (u *{{.UpPackage}}{{.UpMethod}}Service) {{.Upmet}}{{.UpPackage}}{{.UpMethod}}Service() error {
+	return nil
+}
+{{else}}
+func (u *{{.UpPackage}}{{.UpMethod}}Service) {{.Upmet}}{{.UpPackage}}{{.UpMethod}}Service() ({{.UpPackage}}{{.UpMethod}}Res, error) {
+	return u.{{.UpPackage}}{{.UpMethod}}Res,nil
+}
+{{end}}
