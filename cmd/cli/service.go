@@ -38,7 +38,7 @@ func genServer(dirName, fileName, method string, met string) {
 		Package:   utils.Camel2Case(dirName),
 		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
 		Method:    method,
-		UpMethod:  utils.Ucfirst(method),
+		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
 		Met:       met,
 		Upmet:     utils.Ucfirst(met),
 	}
@@ -61,7 +61,11 @@ func genServer(dirName, fileName, method string, met string) {
 			panic("目录初始化失败" + err.Error())
 		}
 	}
-	fmt.Println(filesPath, "httpfilesPath")
+	hasFile, _ := utils.PathExists(filesPath)
+	if hasFile {
+		fmt.Println(filesPath + "文件已存在，不会继续创建")
+		return
+	}
 	fs, err := os.Create(filesPath)
 	err = tpl.ExecuteTemplate(fs, service, data)
 	if err != nil {

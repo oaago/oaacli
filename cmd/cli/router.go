@@ -30,16 +30,17 @@ type HttpMap struct {
 	MiddlewareLen       int
 	Module              string
 	MapHandlerMapImport []MapHttpHandler
+	HasMid              bool
 }
 
-func genRouter(module, handler, pack, url string) {
+func genRouter(module, pack string) {
 	MapHandlerMap := make([]MapHttpHandler, 0)
 	MapHandlerMapImport := make([]MapHttpHandler, 0)
 	HandlerMapOfOne := map[string]bool{}
 	var httpMap HttpMap
-	data, _ := os.ReadFile("./oaa.json")
+	var HasMid = false //是否需要中间件import
+	data, _ := os.ReadFile(configFile)
 	httpData := gjson.Get(string(data), "http").Array()
-	fmt.Println(httpData, "路由信息")
 	for _, datum := range httpData {
 		lis := strings.Split(datum.String(), "@/")
 		if len(lis) != 2 {
@@ -50,11 +51,20 @@ func genRouter(module, handler, pack, url string) {
 		if len(decStr) == 2 {
 			lis[1] = strings.Replace(lis[1], "**"+decStr[1], "", 1)
 		}
+		// 如果是 * 代表支持所以请求方式
+		if lis[0] == "*" {
+			lis[0] = strings.Replace(lis[0], "*", AllowMethods, 1)
+		}
 		lim := strings.Split(lis[1], "|")
 		dir := lim[0]
 		hand := strings.Split(dir, "/")
+		if len(hand) > 2 {
+			hand1 := strings.Replace(dir, "/", "_", -1)
+			hand = []string{hand[0], strings.Replace(hand1, hand[0]+"_", "", 1)}
+		}
 		Middleware := make([]string, 0)
 		if len(lim) > 1 {
+			HasMid = true
 			if strings.Contains(lim[1], ",") {
 				midList := strings.Split(lim[1], ",")
 				for _, mid := range midList {
@@ -69,16 +79,16 @@ func genRouter(module, handler, pack, url string) {
 		methodMap := strings.Split(lis[0], ",")
 		for _, s := range methodMap {
 			// 判断有多少个handler 文件
-			if HandlerMapOfOne[dir] != true {
-				HandlerMapOfOne[dir] = true
+			if HandlerMapOfOne[hand[0]+hand[1]] != true {
+				HandlerMapOfOne[hand[0]+hand[1]] = true
 				MapHandlerMapImport = append(MapHandlerMapImport, MapHttpHandler{
 					Url:             s + "@/" + dir,
 					Module:          module,
 					Middleware:      Middleware,
-					Handler:         utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1]),
-					HttpDir:         utils.Camel2Case(hand[0]),
+					Handler:         utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
+					HttpDir:         utils.Case2Camel(utils.Camel2Case(hand[0])),
 					Method:          hand[1],
-					UpMethod:        utils.Ucfirst(hand[1]),
+					UpMethod:        utils.Case2Camel(utils.Ucfirst(hand[1])),
 					Package:         hand[1],
 					UpPackage:       utils.Camel2Case(pack),
 					Upmet:           utils.Ucfirst(s),
@@ -89,10 +99,10 @@ func genRouter(module, handler, pack, url string) {
 				Url:        s + "@/" + dir,
 				Module:     module,
 				Middleware: Middleware,
-				Handler:    utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1]),
-				HttpDir:    utils.Camel2Case(hand[0]),
+				Handler:    utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
+				HttpDir:    utils.Case2Camel(utils.Camel2Case(hand[0])),
 				Method:     hand[1],
-				UpMethod:   utils.Ucfirst(hand[1]),
+				UpMethod:   utils.Case2Camel(utils.Ucfirst(hand[1])),
 				Package:    hand[1],
 				UpPackage:  utils.Camel2Case(pack),
 				Upmet:      utils.Ucfirst(s),
@@ -109,6 +119,7 @@ func genRouter(module, handler, pack, url string) {
 	httpMap.MapHandlerMap = MapHandlerMap
 	httpMap.Module = module
 	httpMap.MapHandlerMapImport = MapHandlerMapImport
+	httpMap.HasMid = HasMid
 	httpFile, _ := os.Create(HttpRouterFile)
 	if err := tmpl.Execute(httpFile, httpMap); err != nil {
 		panic(err)

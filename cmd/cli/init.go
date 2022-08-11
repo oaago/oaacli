@@ -48,6 +48,7 @@ func genDef() {
 			if len(result1) == 0 && len(result2) == 0 {
 				panic(li + " 不符合规范请检查之后在使用")
 			}
+			// 解析接口描述
 			// 根据规则获取不同的参数
 			// 1. @ 代表的是http通信 请求模式@请求地址
 			// 2. & 代表的是rpc通信
@@ -58,37 +59,36 @@ func genDef() {
 			if len(decStr) == 2 {
 				// 对于接口的描述
 				dec = decStr[1]
-				fmt.Println(li, "li1======")
 				li = strings.Replace(li, "**"+decStr[1], "", 1)
-				fmt.Println(li, "li2======")
 			}
+			// 解析目录结构
+			// handlerStr 0 代表目录 1代表文件 0_1 代表名称
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
 				if arg[0] == "*" {
 					arg[0] = "get,post,delete,put,update"
 				}
-				method := arg[0]
 				str := arg[1]
+				// 解析模版
 				handlerStr := strings.Split(str, "/")
-				fmt.Println(handlerStr, method)
+				fmt.Println(handlerStr, "路由信息")
+				if len(handlerStr) > 2 {
+					hand1 := strings.Replace(str, "/", "_", -1)
+					handlerStr = []string{handlerStr[0], strings.Replace(hand1, handlerStr[0]+"_", "", 1)}
+				}
 				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1])
 				// arg[0] 代表的是请求方法 arg[1] 请求路径
-				methods := "get,post,delete,put,head,options,update"
 				mothedMap := strings.Split(arg[0], ",")
 				for _, s := range mothedMap {
-					has := strings.Contains(methods, s)
+					has := strings.Contains(AllowMethods, s)
 					if !has {
 						fmt.Printf("检测出请求方式" + arg[0] + "存在" + s + "不正确 没有对应的 method\n")
 						return
 					}
 				}
-				var ss = strings.Split(arg[1], "/")
-				dirName := ss[0]
-				fileName := ss[0]
 				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap)
-				fmt.Println("开始装载路由...." + utils.Camel2Case(dirName) + fileName)
-				fmt.Println(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], str, "ccccc")
-				genRouter(module, utils.Ucfirst(handlerStr[0])+utils.Ucfirst(method), handlerStr[0], str)
+				fmt.Println("开始装载路由...." + utils.Camel2Case(handlerStr[0]) + handlerStr[1])
+				genRouter(module, handlerStr[0])
 				fmt.Println("http初始化成功！")
 			} else if strings.Contains(li, "&/") {
 				hasRpc = true

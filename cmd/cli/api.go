@@ -46,7 +46,7 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 		Package:   utils.Camel2Case(dirName),
 		UpPackage: utils.Ucfirst(dirName),
 		Method:    utils.Lcfirst(method),
-		UpMethod:  utils.Ucfirst(method),
+		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
 		Module:    module,
 		Met:       met,
 		Upmet:     Upmet,

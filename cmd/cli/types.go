@@ -24,7 +24,7 @@ func genType(servicePath, dirName, method, fun string) {
 		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
 		Method:    utils.Lcfirst(method),
 		Func:      utils.Ucfirst(fun),
-		UpMethod:  utils.Ucfirst(method),
+		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
 	}
 	//创建模板
 	defined := "types"
@@ -50,12 +50,16 @@ func genType(servicePath, dirName, method, fun string) {
 			panic("目录初始化失败" + e.Error())
 		}
 	}
+	hasFile, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
+	if hasFile {
+		fmt.Println(typesDir + "/" + utils.Camel2Case(method) + "/types.go" + "文件已存在，不会继续创建")
+		return
+	}
 	//渲染输出
 	fs, e := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
 	if e != nil {
 		fmt.Println("type 文件写入失败" + e.Error())
 	}
-	fmt.Println(typesDir, utils.Camel2Case(method)+"/types.go")
 	tplerr := tpl.ExecuteTemplate(fs, defined, data)
 	if tplerr != nil {
 		panic(tplerr)

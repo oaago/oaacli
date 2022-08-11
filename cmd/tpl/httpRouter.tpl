@@ -4,14 +4,14 @@
 package router
 import (
 	"github.com/oaago/server/oaa"
-	middleware_http "{{.Module}}/internal/middleware/http"
+	{{if .HasMid}} middleware_http "{{.Module}}/internal/middleware/http"{{end}}
     {{range $index, $item := .MapHandlerMapImport}}
 	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/{{$item.HttpDir}}/{{$item.Method}}" //{{$item}}{{end}}
 )
 type ConfigRouter oaa.ConfigRouter
 func LoadRouterMap() oaa.MapHttpRoute {
 	{{if eq .MiddlewareLen 0}}
-	// Pid := middleware_http.NewPid()
+	// 不需要中间件 Pid := middleware_http.NewPid()
 	{{else}}
 	Pid := middleware_http.NewPid()
 	{{end}}

@@ -21,6 +21,7 @@ var (
 	middlewarePath = "./internal/middleware/"
 	HttpRouterFile = "./internal/router/router.http.gen.go"
 	RpcRouterFile  = "./internal/router/router.rpc.gen.go"
+	AllowMethods   = "get,post,delete,put,update"
 	SemanticMap    = map[string]string{
 		"get":    "Get$ById",
 		"post":   "Create$",

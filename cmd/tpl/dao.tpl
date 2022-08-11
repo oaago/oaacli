@@ -8,21 +8,22 @@ import (
 	"{{.Module}}/internal/model/{{.Package}}_query"
 )
 
-type {{.UpMethod}}Dao struct {
+type {{.UpMethod}}ModelType {{.Package}}_model.{{.UpMethod}}
+type {{.UpMethod}}DaoType struct {
 	DB      *gorm.DB
 	Query   *{{.Package}}_query.Query
-	Table   string
-	Columns {{.Package}}_model.{{.UpMethod}}
+	TableName   string
+	Model {{.UpMethod}}ModelType
 	RedisClient redis.Cli
 }
 
 var (
-	{{.UpMethod}}Model = {{.Package}}_model.{{.UpMethod}}{}
-	{{.UpMethod}} = {{.UpMethod}}Dao{
+    {{.UpMethod}}Model = {{.UpMethod}}ModelType{}
+	{{.UpMethod}}Dao = {{.UpMethod}}DaoType{
 		DB:      mysql.GetDBByName("{{.Package}}"),
 		Query:   {{.Package}}_query.Use(mysql.GetDBByName("{{.Package}}")),
-		Table:   {{.UpMethod}}Model.TableName(),
-		Columns: {{.Package}}_model.{{.UpMethod}}{},
+		TableName: {{.Package}}_model.TableName{{.UpMethod}},
+		Model: {{.UpMethod}}Model,
 		RedisClient: *redis.RedisClient,
 	}
 )
