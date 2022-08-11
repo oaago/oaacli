@@ -17,6 +17,10 @@ import (
 // @Tags v1.0
 // @Accept json
 // @Produce json
+
+// @param name body string true "用户名，建议使用姓名拼音"
+// @param nick_name body string true "用户昵称，请使用真实姓名"
+
 // @Success 200 {object} {{$.UpPackage}}{{$.UpMethod}}Res
 // @Router /{{$.Package}}/{{$.Method}} [{{$method}}]
 func {{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler(c *oaa.Ctx) {

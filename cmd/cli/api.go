@@ -81,7 +81,7 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 	//		}
 	//	}
 	//}
-	fmt.Println(filesName + "文件不存在即将创建文件")
+	//fmt.Println(filesName + "文件不存在即将创建文件")
 	fs, _ := os.Create(filesName)
 	err = tpl.ExecuteTemplate(fs, api, data)
 	if err != nil {

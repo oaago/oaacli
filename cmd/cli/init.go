@@ -39,8 +39,8 @@ func genDef() {
 	for _, team := range mapurl {
 		for _, lis := range team {
 			// 先验证规则是否合法
-			httpReg := regexp.MustCompile(`(get|post|put)@/[A-Za-z0-9]{0,20}/[A-Za-z0-9]{0,20}`)
-			rpcReg := regexp.MustCompile(`(get|post|put)&/[A-Za-z0-9]{0,20}/[A-Za-z0-9]{0,20}`)
+			httpReg := regexp.MustCompile(`(get|post|put|delete|update|\*)@(/[A-Za-z0-9]{0,20})+\*\*.*`)
+			rpcReg := regexp.MustCompile(`(get|post|put|delete|update|\*)&(/[A-Za-z0-9]{0,20})+\*\*.*`)
 			lim := strings.Split(strings.ToLower(lis), "|")
 			li := lim[0]
 			result1 := httpReg.FindAllStringSubmatch(li, -1)
@@ -65,7 +65,7 @@ func genDef() {
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
 				if arg[0] == "*" {
-					arg[0] = "get,post,delete,put"
+					arg[0] = "get,post,delete,put,update"
 				}
 				method := arg[0]
 				str := arg[1]
@@ -73,7 +73,7 @@ func genDef() {
 				fmt.Println(handlerStr, method)
 				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1])
 				// arg[0] 代表的是请求方法 arg[1] 请求路径
-				methods := "get,post,delete,put,head,options"
+				methods := "get,post,delete,put,head,options,update"
 				mothedMap := strings.Split(arg[0], ",")
 				for _, s := range mothedMap {
 					has := strings.Contains(methods, s)

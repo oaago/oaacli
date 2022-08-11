@@ -26,5 +26,6 @@ var (
 		"post":   "Create$",
 		"delete": "Delete$ById",
 		"put":    "Update$",
+		"update": "Update$",
 	}
 )
