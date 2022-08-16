@@ -71,21 +71,3 @@ get,post,delete,put 代表的是请求方式 * ,代表支持所有的请求方�
 **企业租户 **后面代表的是备注
 
 所有api/rpc的生成都依赖于 internal/defined.json 的规则
-
-4.api的生成(同时会生成service)
-
-   ```
-   oaacli api get@/app/aaa
-   ```
-
-4 .rpc的生成
-
-   ```
-   oaacli rpc-add get@app/aaa
-   ```
-
-5 .rpc的生成
-
-   ```
-   oaacli srv app/aaa
-   ```
