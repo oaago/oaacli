@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -13,6 +14,8 @@ import (
 
 type MapHttpHandler struct {
 	Url             string
+	RequestUrl      string
+	RequestType     string
 	Handler         string
 	Module          string
 	Method          string
@@ -83,6 +86,8 @@ func genRouter(module, pack string) {
 				HandlerMapOfOne[hand[0]+hand[1]] = true
 				MapHandlerMapImport = append(MapHandlerMapImport, MapHttpHandler{
 					Url:             s + "@/" + dir,
+					RequestUrl:      "/" + dir,
+					RequestType:     strings.ToUpper(s),
 					Module:          module,
 					Middleware:      Middleware,
 					Handler:         utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
@@ -96,16 +101,18 @@ func genRouter(module, pack string) {
 				})
 			}
 			MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
-				Url:        s + "@/" + dir,
-				Module:     module,
-				Middleware: Middleware,
-				Handler:    utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
-				HttpDir:    utils.Case2Camel(utils.Camel2Case(hand[0])),
-				Method:     hand[1],
-				UpMethod:   utils.Case2Camel(utils.Ucfirst(hand[1])),
-				Package:    hand[1],
-				UpPackage:  utils.Camel2Case(pack),
-				Upmet:      utils.Ucfirst(s),
+				Url:         s + "@/" + dir,
+				RequestUrl:  "/" + dir,
+				RequestType: strings.ToUpper(s),
+				Module:      module,
+				Middleware:  Middleware,
+				Handler:     utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
+				HttpDir:     utils.Case2Camel(utils.Camel2Case(hand[0])),
+				Method:      hand[1],
+				UpMethod:    utils.Case2Camel(utils.Ucfirst(hand[1])),
+				Package:     hand[1],
+				UpPackage:   utils.Camel2Case(pack),
+				Upmet:       utils.Ucfirst(s),
 			})
 		}
 		if len(Middleware) != 0 {
@@ -124,6 +131,8 @@ func genRouter(module, pack string) {
 	if err := tmpl.Execute(httpFile, httpMap); err != nil {
 		panic(err)
 	}
+	cmd := exec.Command("gofmt", "-w", HttpRouterFile)
+	cmd.Run() //nolint:errcheck
 	fmt.Println("http 路由文件生成成功")
 }
 func genRpcRouter(module, handler, pack, url string) {

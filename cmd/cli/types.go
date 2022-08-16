@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -10,14 +11,21 @@ import (
 	"github.com/oaago/oaago/utils"
 )
 
-func genType(servicePath, dirName, method, fun string) {
+func genType(servicePath, dirName, method, fun, currentDBName string) {
 	//模板变量
+	var met = make([]string, 0)
+	for s, _ := range DecMessage {
+		met = append(met, utils.Ucfirst(s)+utils.Case2Camel(utils.Ucfirst(dirName))+utils.Case2Camel(utils.Ucfirst(method)))
+	}
 	type Defined struct {
 		Package   string
 		UpPackage string
 		Method    string
 		UpMethod  string
 		Func      string
+		Met       []string
+		DBName    string
+		Module    string
 	}
 	data := Defined{
 		Package:   utils.Camel2Case(dirName),
@@ -25,6 +33,9 @@ func genType(servicePath, dirName, method, fun string) {
 		Method:    utils.Lcfirst(method),
 		Func:      utils.Ucfirst(fun),
 		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
+		Met:       met,
+		DBName:    currentDBName,
+		Module:    module,
 	}
 	//创建模板
 	defined := "types"
@@ -33,30 +44,15 @@ func genType(servicePath, dirName, method, fun string) {
 	text := tpl2.HttpTypesTpl
 	tpl, err := tmpl.Parse(text)
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
 	typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(dirName)
-	hasDir, _ := utils.PathExists(typesDir)
-	if !hasDir {
-		err := os.Mkdir(typesDir, os.ModePerm)
-		if err != nil {
-			panic("目录初始化失败" + err.Error())
-		}
-	}
-	hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method))
-	if !hasDir1 {
-		e := os.Mkdir(typesDir+"/"+utils.Camel2Case(method), os.ModePerm)
-		if e != nil {
-			panic("目录初始化失败" + e.Error())
-		}
-	}
-	hasFile, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
-	if hasFile {
-		fmt.Println(typesDir + "/" + utils.Camel2Case(method) + "/types.go" + "文件已存在，不会继续创建")
-		return
-	}
 	//渲染输出
-	fs, e := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
+	hasFile, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method) + "/service.go")
+	if hasFile {
+		fmt.Println(typesDir + "/" + utils.Camel2Case(method) + "/service.go" + "文件已存在，不会继续创建")
+	}
+	fs, e := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/service.go")
 	if e != nil {
 		fmt.Println("type 文件写入失败" + e.Error())
 	}
@@ -65,6 +61,8 @@ func genType(servicePath, dirName, method, fun string) {
 		panic(tplerr)
 	}
 	fs.Close()
+	cmd := exec.Command("gofmt", "-w", typesDir+"/"+utils.Camel2Case(method)+"/service.go")
+	cmd.Run() //nolint:errcheck
 	fmt.Println("写入types模版成功 " + typesDir)
 }
 

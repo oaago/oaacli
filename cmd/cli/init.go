@@ -7,6 +7,8 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/oaago/oaago/utils"
 	"github.com/spf13/cobra"
@@ -21,6 +23,9 @@ var GenInit = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
+			TableMap = utils.LoadAllTables()
+			fmt.Println(TableMap)
+			time.Sleep(3 * time.Second)
 			genDef()
 		}
 	},
@@ -32,15 +37,18 @@ func genDef() {
 		fmt.Println(err.Error())
 	}
 	var mapurl map[string][]string
-	json.Unmarshal(data, &mapurl)
+	json.Unmarshal(data, &mapurl) //nolint:errcheck
 	// 初始化目录
 	initFile(module)
 	hasRpc := false
+	lock := sync.Mutex{}
 	for _, team := range mapurl {
 		for _, lis := range team {
+			lock.Lock()
+			CurrentDBName := ""
 			// 先验证规则是否合法
-			httpReg := regexp.MustCompile(`(get|post|put|delete|update|\*)@(/[A-Za-z0-9]{0,20})+\*\*.*`)
-			rpcReg := regexp.MustCompile(`(get|post|put|delete|update|\*)&(/[A-Za-z0-9]{0,20})+\*\*.*`)
+			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9]{0,20})+\*\*.*`)
+			rpcReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)&(/[A-Za-z0-9]{0,20})+\*\*.*`)
 			lim := strings.Split(strings.ToLower(lis), "|")
 			li := lim[0]
 			result1 := httpReg.FindAllStringSubmatch(li, -1)
@@ -66,7 +74,7 @@ func genDef() {
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
 				if arg[0] == "*" {
-					arg[0] = "get,post,delete,put,update"
+					arg[0] = AllowMethods
 				}
 				str := arg[1]
 				// 解析模版
@@ -76,13 +84,50 @@ func genDef() {
 					hand1 := strings.Replace(str, "/", "_", -1)
 					handlerStr = []string{handlerStr[0], strings.Replace(hand1, handlerStr[0]+"_", "", 1)}
 				}
-				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1])
+				typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(handlerStr[0])
+				hasDir, _ := utils.PathExists(typesDir)
+				if !hasDir {
+					err := os.Mkdir(typesDir, os.ModePerm)
+					if err != nil {
+						panic("目录初始化失败" + err.Error())
+					}
+				}
+				hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(handlerStr[1]))
+				if !hasDir1 {
+					e := os.Mkdir(typesDir+"/"+utils.Camel2Case(handlerStr[1]), os.ModePerm)
+					if e != nil {
+						panic("目录初始化失败" + e.Error())
+					}
+				}
+				hasFile, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(handlerStr[1]) + "/types.go")
+				if hasFile {
+					fmt.Println(typesDir + "/" + utils.Camel2Case(handlerStr[1]) + "/types.go" + "文件已存在，不会继续创建")
+				}
+				//渲染输出
+				fs, e := os.Create(typesDir + "/" + utils.Camel2Case(handlerStr[1]) + "/types.go")
+				if e != nil {
+					fs.Close()
+					panic(e)
+				}
+				fs.Close()
+				if len(TableMap) > 1 {
+					fmt.Println("请输入要关联的数据库")
+					fmt.Scanln(&CurrentDBName)
+					utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
+				} else {
+					for s, _ := range TableMap {
+						CurrentDBName = s
+					}
+					utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
+				}
+				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1], CurrentDBName)
 				// arg[0] 代表的是请求方法 arg[1] 请求路径
 				mothedMap := strings.Split(arg[0], ",")
 				for _, s := range mothedMap {
 					has := strings.Contains(AllowMethods, s)
 					if !has {
 						fmt.Printf("检测出请求方式" + arg[0] + "存在" + s + "不正确 没有对应的 method\n")
+						lock.Unlock()
 						return
 					}
 				}
@@ -90,6 +135,8 @@ func genDef() {
 				fmt.Println("开始装载路由...." + utils.Camel2Case(handlerStr[0]) + handlerStr[1])
 				genRouter(module, handlerStr[0])
 				fmt.Println("http初始化成功！")
+				lock.Unlock()
+				continue
 			} else if strings.Contains(li, "&/") {
 				hasRpc = true
 				arg := strings.Split(li, "&/")
@@ -104,11 +151,13 @@ func genDef() {
 				_, err := os.Stat("./powerproto.yaml")
 				if err != nil {
 					pow, _ := os.Create("./powerproto.yaml")
-					pow.WriteString(tpl.PowerprotoTpl)
+					pow.WriteString(tpl.PowerprotoTpl) //nolint:errcheck
 					pow.Close()
 				}
 				fmt.Println("rpc初始化成功！")
+				lock.Unlock()
 			} else {
+				lock.Unlock()
 				panic("不符合规范 http get@/aa/bb  rpc get&/aa/bb")
 			}
 		}
@@ -122,7 +171,7 @@ func genDef() {
 		def := strings.Replace(tpl.MainTpl, "%package%", module, -1)
 		// 处理是否增加rpc server
 		newTpl := strings.Replace(def, "//route.RpcServer", "route.RpcServer", 1)
-		mainFile.WriteString(newTpl)
+		mainFile.WriteString(newTpl) //nolint:errcheck
 		mainFile.Close()
 		fmt.Println("新增rpc处理模式")
 	}

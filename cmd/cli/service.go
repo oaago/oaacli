@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -13,12 +14,12 @@ import (
 // 根据http生成路径
 func genServer(dirName, fileName, method string, met string) {
 	// 检测是否存在types
-	typePath := strings.ToLower(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName) + "/" + "typs.go")
-	exist, _ := utils.PathExists(typePath)
-	if !exist {
-		fmt.Println("types文件不存在 将会自动生成", typePath)
-		genType(apiServicePath, utils.Camel2Case(dirName), fileName, utils.Lcfirst(method))
-	}
+	//typePath := strings.ToLower(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName) + "/" + "typs.go")
+	//exist, _ := utils.PathExists(typePath)
+	//if !exist {
+	//	fmt.Println("types文件不存在 将会自动生成", typePath)
+	//	genType(apiServicePath, utils.Camel2Case(dirName), fileName, utils.Lcfirst(method))
+	//}
 	//模板变量
 	filesPath := strings.ToLower(utils.Camel2Case(apiServicePath+dirName+"/"+fileName) + "/" + met + "_" + utils.Camel2Case(dirName) + "_" + utils.Lcfirst(method) + "_service.go")
 	exists, _ := utils.PathExists(filesPath)
@@ -72,6 +73,8 @@ func genServer(dirName, fileName, method string, met string) {
 		panic(err.Error())
 	}
 	fs.Close()
+	cmd := exec.Command("gofmt", "-w", filesPath)
+	cmd.Run() //nolint:errcheck
 	fmt.Println("写入http-service模版成功 " + filesPath)
 }
 

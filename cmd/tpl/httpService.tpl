@@ -13,8 +13,8 @@ func (u *{{.UpPackage}}{{.UpMethod}}Service) {{.Upmet}}{{.UpPackage}}{{.UpMethod
 	return nil
 }
 {{else}}
-func (u *{{.UpPackage}}{{.UpMethod}}Service) {{.Upmet}}{{.UpPackage}}{{.UpMethod}}Service() ({{.UpPackage}}{{.UpMethod}}Res, error) {
+func (u *{{.UpPackage}}{{.UpMethod}}Service) {{.Upmet}}{{.UpPackage}}{{.UpMethod}}Service() ({{.Upmet}}{{.UpPackage}}{{.UpMethod}}Res, error) {
 	logx.Logger.Info("{{.Upmet}}{{.UpPackage}}{{.UpMethod}}Service")
-	return u.{{.UpPackage}}{{.UpMethod}}Res,nil
+	return u.{{.Upmet}}{{.UpPackage}}{{.UpMethod}}Res,nil
 }
 {{end}}

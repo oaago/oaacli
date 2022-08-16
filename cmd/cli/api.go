@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tpl2 "github.com/oaago/oaago/cmd/tpl"
 	"os"
+	"os/exec"
 	"strings"
 	"text/template"
 
@@ -32,25 +33,35 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 	}
 	//模板变量
 	type Api struct {
-		Package   string
-		UpPackage string
-		Method    string
-		UpMethod  string
-		Module    string
-		Met       []string
-		Upmet     []string
-		Dec       string
+		Package    string
+		UpPackage  string
+		Method     string
+		UpMethod   string
+		Module     string
+		Met        []string
+		Upmet      []string
+		Dec        string
+		DecMessage map[string]string
 	}
 	module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
+	var DecMsg = make(map[string]string)
+	for _, mm := range met {
+		for k, msg := range DecMessage {
+			if mm == k {
+				DecMsg[utils.Ucfirst(k)] = strings.Replace(msg, "$", dec, 1)
+			}
+		}
+	}
 	data := Api{
-		Package:   utils.Camel2Case(dirName),
-		UpPackage: utils.Ucfirst(dirName),
-		Method:    utils.Lcfirst(method),
-		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
-		Module:    module,
-		Met:       met,
-		Upmet:     Upmet,
-		Dec:       dec,
+		Package:    utils.Camel2Case(dirName),
+		UpPackage:  utils.Ucfirst(dirName),
+		Method:     utils.Lcfirst(method),
+		UpMethod:   utils.Case2Camel(utils.Ucfirst(method)),
+		Module:     module,
+		Met:        met,
+		Upmet:      Upmet,
+		Dec:        dec,
+		DecMessage: DecMsg,
 	}
 	//创建模板
 	fmt.Println("开始api写入模版 " + fileName)
@@ -95,5 +106,7 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 			genServer(utils.Camel2Case(dirName), fileName, fileName, s)
 		}
 	}
+	cmd := exec.Command("gofmt", "-w", filesName)
+	cmd.Run() //nolint:errcheck
 	fmt.Println("文件已存在不再生成" + filesName)
 }

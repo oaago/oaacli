@@ -2,6 +2,9 @@ package utils
 
 import (
 	"bytes"
+	"fmt"
+	"github.com/oaago/cloud/mysql"
+	"github.com/oaago/cloud/op"
 	"log"
 	"os"
 	"os/exec"
@@ -139,5 +142,69 @@ func CLIScreen() {
 	pterm.DefaultCenter.Print(pterm.DefaultHeader.WithBackgroundStyle(pterm.NewStyle(pterm.BgLightBlue)).WithMargin(10).Sprint("Oaago CLI"))
 	introSpinner, _ := pterm.DefaultSpinner.WithShowTimer(false).WithRemoveWhenDone(true).Start("Waiting for ...")
 	pterm.DefaultSection.Println("安装完成，请使用 oaacli 命令进行操作")
-	introSpinner.Stop()
+	introSpinner.Stop() //nolint:errcheck
+}
+
+func LoadAllTables() map[string][]string {
+	tables := make(map[string][]string)
+	for s, v := range op.ConfigData.Mysql {
+		fmt.Println(s, v)
+		if s != "enable" {
+			tables[s] = GetTables(s)
+		}
+	}
+	return tables
+}
+
+func GetTables(dbName string) []string {
+	db, _ := mysql.NewConnect(dbName)
+	rows, _ := db.Raw("show tables").Rows()
+	defer rows.Close()
+	var tables = make([]string, 0)
+	for rows.Next() {
+		var name string
+		rows.Scan(&name) //nolint:errcheck
+		tables = append(tables, name)
+	}
+	return tables
+}
+
+func TableStruct(dbName, tableName, path string) {
+	fmt.Println("生成types dbName:" + dbName + "tableName:" + tableName + "path:" + path)
+	t2t := NewTable2Struct()
+	// 个性化配置
+	t2t.Config(&T2tConfig{
+		// 如果字段首字母本来就是大写, 就不添加tag, 默认false添加, true不添加
+		RmTagIfUcFirsted: false,
+		// tag的字段名字是否转换为小写, 如果本身有大写字母的话, 默认false不转
+		TagToLower: false,
+		// 字段首字母大写的同时, 是否要把其他字母转换为小写,默认false不转换
+		UcFirstOnly: false,
+		// 每个struct放入单独的文件,默认false,放入同一个文件(暂未提供)
+	})
+	// 开始迁移转换
+	err := t2t.
+		// 指定某个表,如果不指定,则默认全部表都迁移
+		Table(tableName).
+		// 表前缀
+		Prefix("").
+		// 是否添加json tag
+		EnableJsonTag(true).
+		// 生成struct的包名(默认为空的话, 则取名为: package model)
+		PackageName(tableName).
+		// tag字段的key值,默认是orm
+		TagKey("").
+		// 是否添加结构体方法获取表名
+		RealNameMethod("").
+		// 生成的结构体保存路径
+		SavePath(path + "/types.go").
+		// 数据库dsn,这里可以使用 t2t.DB() 代替,参数为 *sql.DB 对象
+		Dsn(op.ConfigData.Mysql[dbName] + "?charset=utf8").
+		// 执行
+		Run()
+	fmt.Println(op.ConfigData.Mysql[dbName])
+	if err != nil {
+		fmt.Println(err, "op.ConfigData.Mysql[dbName]")
+		panic(err)
+	}
 }

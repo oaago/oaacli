@@ -4,7 +4,7 @@ import (
 	_ "github.com/oaago/cloud/logx"
 	"github.com/oaago/cloud/op"
 	_ "github.com/oaago/cloud/preload"
-	"github.com/oaago/server/oaa"
+	"github.com/oaago/server/v2"
 	"%package%/internal/consts"
 	docs "%package%/docs"
 	"%package%/internal/router"
@@ -12,11 +12,11 @@ import (
 
 func main() {
 	op.ConfigData.CodeMap = consts.CODE
-	route := &router.ConfigRouter{
-		MapHttpRoute: router.LoadRouterMap,
+	ops := v2.HttpConfig{
+		Port: op.ConfigData.Server.Port,
 	}
-	rr := oaa.NewRouter((*oaa.ConfigRouter)(route))
-	//route.RpcServer = route.RegisterRpcGenRouter()
+	http := v2.NewRouter(ops)
+	router.LoadRouterMapV2(http)
 	docs.SwaggerInfo.BasePath = op.ConfigData.Server.BasePath
-	oaa.Start(rr)
+	http.Start()
 }

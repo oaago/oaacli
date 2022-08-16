@@ -2,7 +2,7 @@ package cli
 
 import (
 	"fmt"
-	"github.com/oaago/oaago/cmd/tpl"
+	tpl2 "github.com/oaago/oaago/cmd/tpl"
 	"os"
 	"os/exec"
 	"strings"
@@ -48,7 +48,7 @@ var NewProject = &cobra.Command{
 // 初始化必要的目录
 func initDir() {
 	fmt.Println("初始化目录")
-	os.Mkdir(ProjectUrl, os.ModePerm)
+	os.Mkdir(ProjectUrl, os.ModePerm) //nolint:errcheck
 	os.Mkdir(ProjectUrl+"/internal", os.ModePerm)
 	os.Mkdir(ProjectUrl+"/internal/api", os.ModePerm)
 	os.Mkdir(ProjectUrl+"/internal/service", os.ModePerm)
@@ -75,15 +75,15 @@ func initDir() {
 func initFile(arg string) {
 	fmt.Println("初始化文件")
 	midFile, err := os.Create(ProjectUrl + "/internal/middleware/http/types.go")
-	midFile.WriteString(tpl.MiddlewareTpl)
+	midFile.WriteString(tpl2.MiddlewareTpl)
 	midFile.Close()
 
 	codeFile, _ := os.Create(ProjectUrl + "/internal/consts/code.go")
-	codeFile.WriteString(tpl.ConstsTpl)
+	codeFile.WriteString(tpl2.ConstsTpl)
 	codeFile.Close()
 
 	definedFile, _ := os.Create(ProjectUrl + "/oaa.json")
-	definedFile.WriteString(tpl.OAATpl)
+	definedFile.WriteString(tpl2.OAATpl)
 	definedFile.Close()
 
 	errs := os.Chdir(arg)
@@ -94,14 +94,14 @@ func initFile(arg string) {
 	if err != nil {
 		panic(err.Error())
 	}
-	mainFile.WriteString(strings.Replace(tpl.MainTpl, "%package%", arg, -1))
+	mainFile.WriteString(strings.Replace(tpl2.MainTpl, "%package%", arg, -1))
 	mainFile.Close()
 	ConfigFile, err := os.Create("app.yaml")
 	if err != nil {
 		panic(err.Error())
 	}
 
-	ConfigFile.WriteString(strings.Replace(tpl.ConfingTpl, "%package%", arg, -1))
+	ConfigFile.WriteString(strings.Replace(tpl2.ConfingTpl, "%package%", arg, -1)) //nolint:errcheck
 	ConfigFile.Close()
 }
 

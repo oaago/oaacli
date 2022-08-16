@@ -1,24 +1,19 @@
 package {{.Package}}_{{.Method}}
 
+import (
+    "{{.Module}}/internal/dao/dao_{{.DBName}}"
+)
+
 type {{.UpPackage}}{{.UpMethod}}Service struct {
-    {{.UpPackage}}{{.UpMethod}}Req
-    {{.UpPackage}}{{.UpMethod}}Res
-    //Dao      dao_oaauser.{{.UpPackage}}{{.UpMethod}}DaoType
-    //DaoModel dao_oaauser.{{.UpPackage}}{{.UpMethod}}ModelType
-    //DB       dao_oaauser.{{.UpPackage}}{{.UpMethod}}DaoType
-}
-//type {{.UpPackage}}{{.UpMethod}} dao_oaauser.{{.UpPackage}}{{.UpMethod}}ModelType
-type {{.UpPackage}}{{.UpMethod}}Req struct{
-    //{{.UpPackage}}{{.UpMethod}}
-}
-
-type {{.UpPackage}}{{.UpMethod}}Res struct{
-
+    {{range $k,$v := .Met}}
+    {{$v}}Req {{end}}
+    {{range $k,$v := .Met}}
+    {{$v}}Res {{end}}
+    Dao      dao_oaauser.{{.UpPackage}}{{.UpMethod}}DaoType
 }
 
 func NewService{{.UpPackage}}() *{{.UpPackage}}{{.UpMethod}}Service {
 	return &{{.UpPackage}}{{.UpMethod}}Service{
-        //Dao:      dao_oaauser.{{.UpPackage}}{{.UpMethod}}Dao,
-        //DaoModel: dao_oaauser.{{.UpPackage}}{{.UpMethod}}Model,
+        Dao:  dao_oaauser.{{.UpPackage}}{{.UpMethod}}Dao,
 	}
 }

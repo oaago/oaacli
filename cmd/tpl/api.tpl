@@ -1,34 +1,31 @@
 package {{.Package}}_{{.Method}}
 import (
-	"encoding/json"
+    "encoding/json"
+    "github.com/go-playground/validator/v10"
+    "github.com/oaago/cloud/logx"
+    "github.com/oaago/server/oaa/translator"
+    "github.com/oaago/server/v2"
 	{{.Package}}{{.UpMethod}} "{{.Module}}/internal/service/{{.Package}}/{{.Method}}"
-	"github.com/go-playground/validator/v10"
-	"github.com/oaago/cloud/logx"
-	"github.com/oaago/server/oaa"
-	"github.com/oaago/server/oaa/translator"
 )
 
-{{range $i, $method := .Upmet }}
-// @Summary {{$method}}{{$.Dec}}
+{{range $i, $method := .Upmet }}//{{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler {{range $met, $msg := $.DecMessage }}{{if eq $met $method}}
+//@Summary {{$.Dec}}
 // @Schemes
-// @Description {{$.Dec}}的{{$method}}请求
+// @Description {{$msg}}{{end}}{{end}}
 // @Tags v1.0
 // @Accept json
 // @Produce json
-
 // @param name body string true "用户名，建议使用姓名拼音"
 // @param nick_name body string true "用户昵称，请使用真实姓名"
-
 // @Success 200 {object} {{$.UpPackage}}{{$.UpMethod}}Res
 // @Router /{{$.Package}}/{{$.Method}} [{{$method}}]
-// {{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler
-func {{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler(c *oaa.Ctx) {
+func {{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler(c *v2.Context) {
 	// 实例化service
 	{{$.Package}}Srv := {{$.Package}}{{$.UpMethod}}.NewService{{$.UpPackage}}()
 	{{if eq $method "Post" "Put"}}
-	if err := c.ShouldBindJSON(&{{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
+	if err := c.ShouldBindJSON(&{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
 	{{else}}
-	if err := c.ShouldBind(&{{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
+	if err := c.ShouldBind(&{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
 	{{end}}
 		// 获取validator.ValidationErrors类型的errors
 		errs, ok := err.(validator.ValidationErrors)
@@ -42,23 +39,24 @@ func {{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler(c *oaa.Ctx) {
 		return
 	}
     // 打印相关信息
-    req, _ := json.Marshal({{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Req)
-    res, _ := json.Marshal({{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Res)
-    logx.Logger.Info(`{{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Req: `+ string(req))
-    logx.Logger.Info(`{{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Res: `+ string(res))
+    req, _ := json.Marshal({{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req)
+    res, _ := json.Marshal({{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res)
+    logx.Logger.Info(`{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req: `+ string(req))
+    logx.Logger.Info(`{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res: `+ string(res))
 	{{if eq $method "Get"}}
-	err := {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service()
+	var err = {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service()
 	{{else if eq $method "Delete"}}
-	err := {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service()
+	var err = {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service()
 	{{else}}
-	{{$.UpPackage}}{{$.UpMethod}}Res, err := {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service(){{end}}
+	_, err := {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service(){{end}}
 	if err != nil {
-		logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求异常", {{$.UpPackage}}{{$.UpMethod}}Res， err.Error())
+		logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求异常", {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res, err.Error())
 		c.Return(10006)
 		return
 	}
-	logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求正常", {{$.UpPackage}}{{$.UpMethod}}Res)
-	c.Return(200, {{$.Package}}Srv.{{$.UpPackage}}{{$.UpMethod}}Res)
+	logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求正常", {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res)
+	c.Return(200, {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res)
 	return
 }
+
 {{end}}
