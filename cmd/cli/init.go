@@ -46,6 +46,7 @@ func genDef() {
 		for _, lis := range team {
 			lock.Lock()
 			CurrentDBName := ""
+			CurrentTableInfo := make(map[string]map[string]string)
 			// 先验证规则是否合法
 			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9]{0,20})+\*\*.*`)
 			rpcReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)&(/[A-Za-z0-9]{0,20})+\*\*.*`)
@@ -113,12 +114,13 @@ func genDef() {
 				if len(TableMap) > 1 {
 					fmt.Println("请输入要关联的数据库")
 					fmt.Scanln(&CurrentDBName)
-					utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
+					CurrentTableInfo = utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
 				} else {
 					for s, _ := range TableMap {
 						CurrentDBName = s
 					}
-					utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
+					CurrentTableInfo = utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
+					fmt.Println("表名称："+handlerStr[0]+"_"+handlerStr[1], "结构：", CurrentTableInfo)
 				}
 				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1], CurrentDBName)
 				// arg[0] 代表的是请求方法 arg[1] 请求路径
@@ -131,7 +133,18 @@ func genDef() {
 						return
 					}
 				}
-				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap)
+				var param = make([]string, 0)
+				for s, m := range CurrentTableInfo {
+					types := strings.Replace(m["type"], "int64", "int", -1)
+					comment := strings.Replace(strings.Replace(m["comment"], "//", "", -1), " ", "", -1)
+					if len(comment) == 0 {
+						comment = s
+					}
+					ss := "@param " + utils.Lcfirst(s) + " body " + types + " true \"" + comment + "\""
+					param = append(param, "// "+ss)
+				}
+				fmt.Println(param, "param")
+				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap, param)
 				fmt.Println("开始装载路由...." + utils.Camel2Case(handlerStr[0]) + handlerStr[1])
 				genRouter(module, handlerStr[0])
 				fmt.Println("http初始化成功！")

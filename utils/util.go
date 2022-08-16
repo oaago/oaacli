@@ -169,7 +169,8 @@ func GetTables(dbName string) []string {
 	return tables
 }
 
-func TableStruct(dbName, tableName, path string) {
+func TableStruct(dbName, tableName, path string) map[string]map[string]string {
+	tables := make(map[string]map[string]string)
 	fmt.Println("生成types dbName:" + dbName + "tableName:" + tableName + "path:" + path)
 	t2t := NewTable2Struct()
 	// 个性化配置
@@ -183,7 +184,7 @@ func TableStruct(dbName, tableName, path string) {
 		// 每个struct放入单独的文件,默认false,放入同一个文件(暂未提供)
 	})
 	// 开始迁移转换
-	err := t2t.
+	tables, err := t2t.
 		// 指定某个表,如果不指定,则默认全部表都迁移
 		Table(tableName).
 		// 表前缀
@@ -207,4 +208,5 @@ func TableStruct(dbName, tableName, path string) {
 		fmt.Println(err, "op.ConfigData.Mysql[dbName]")
 		panic(err)
 	}
+	return tables
 }

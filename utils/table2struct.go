@@ -133,20 +133,21 @@ func (t *Table2Struct) Config(c *T2tConfig) *Table2Struct {
 	return t
 }
 
-func (t *Table2Struct) Run() error {
+func (t *Table2Struct) Run() (map[string]map[string]string, error) {
+	var tableInfo = make(map[string]map[string]string)
 	if t.config == nil {
 		t.config = new(T2tConfig)
 	}
 	// 链接mysql, 获取db对象
 	t.dialMysql()
 	if t.err != nil {
-		return t.err
+		return nil, t.err
 	}
 
 	// 获取表和字段的shcema
 	tableColumns, err := t.getColumns()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// 包名
@@ -205,6 +206,10 @@ func (t *Table2Struct) Run() error {
 				structContent += fmt.Sprintf("%s%s %s %s%s\n",
 					tab(depth), v.ColumnName, v.Type, v.Tag, clumnComment)
 			}
+			info := make(map[string]string)
+			info["type"] = v.Type
+			info["comment"] = clumnComment
+			tableInfo[v.ColumnName] = info
 		}
 		structContent += tab(depth-1) + "}\n\n"
 		// get or delete
@@ -299,7 +304,7 @@ func (t *Table2Struct) Run() error {
 	f, err := os.Create(filePath)
 	if err != nil {
 		log.Println("Can not write file")
-		return err
+		return nil, err
 	}
 	defer f.Close()
 	f.WriteString(packageName + importContent + getStructContent + postStructContent + deleteStructContent + putStructContent + patchStructContent + //nolint:errcheck
@@ -307,7 +312,7 @@ func (t *Table2Struct) Run() error {
 	cmd := exec.Command("gofmt", "-w", filePath)
 	cmd.Run() //nolint:errcheck
 	log.Println("gen model finish!!!")
-	return nil
+	return tableInfo, nil
 }
 
 func (t *Table2Struct) dialMysql() {

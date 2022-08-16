@@ -12,7 +12,7 @@ import (
 	"github.com/oaago/oaago/utils"
 )
 
-func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
+func genApi(apiPath, dirName, fileName, method, dec string, met, param []string) {
 	var Upmet = []string{}
 	for _, s := range met {
 		Upmet = append(Upmet, utils.Ucfirst(s))
@@ -39,6 +39,7 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 		UpMethod   string
 		Module     string
 		Met        []string
+		Param      []string
 		Upmet      []string
 		Dec        string
 		DecMessage map[string]string
@@ -62,6 +63,7 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 		Upmet:      Upmet,
 		Dec:        dec,
 		DecMessage: DecMsg,
+		Param:      param,
 	}
 	//创建模板
 	fmt.Println("开始api写入模版 " + fileName)
