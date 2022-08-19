@@ -56,8 +56,8 @@ func genServer(dirName, fileName, method string, met string) {
 	//渲染输出
 	hasDir, _ := utils.PathExists(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName))
 	if !hasDir {
-		err := os.Mkdir(utils.Camel2Case(apiServicePath+dirName), os.ModePerm)
-		err = os.Mkdir(utils.Camel2Case(apiServicePath+dirName+"/"+fileName), os.ModePerm)
+		err := os.Mkdir(utils.Camel2Case(apiServicePath+dirName), 0777)
+		err = os.Mkdir(utils.Camel2Case(apiServicePath+dirName+"/"+fileName), 0777)
 		if err != nil {
 			panic("目录初始化失败" + err.Error())
 		}

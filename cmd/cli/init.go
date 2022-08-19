@@ -5,6 +5,7 @@ import (
 	"fmt"
 	tpl "github.com/oaago/oaago/cmd/tpl"
 	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 	"sync"
@@ -37,7 +38,7 @@ func genDef() {
 		fmt.Println(err.Error())
 	}
 	var mapurl map[string][]string
-	json.Unmarshal(data, &mapurl) //nolint:errcheck
+	json.Unmarshal(data, &mapurl) //nolint:err check
 	// 初始化目录
 	initFile(module)
 	hasRpc := false
@@ -48,13 +49,18 @@ func genDef() {
 			CurrentDBName := ""
 			CurrentTableInfo := make(map[string]map[string]string)
 			// 先验证规则是否合法
-			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9]{0,20})+\*\*.*`)
-			rpcReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)&(/[A-Za-z0-9]{0,20})+\*\*.*`)
-			lim := strings.Split(strings.ToLower(lis), "|")
-			li := lim[0]
-			result1 := httpReg.FindAllStringSubmatch(li, -1)
-			result2 := rpcReg.FindAllStringSubmatch(li, -1)
-			if len(result1) == 0 && len(result2) == 0 {
+			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9|,?A-Za-z0-9]{0,30})+\*\*.*`)
+			li := lis
+			// 针对中间件的解析
+			if strings.Contains(lis, "|") {
+				midHas := strings.Split(lis, "|")
+				if len(midHas) == 2 {
+					midDec := strings.Split(midHas[1], "**")
+					li = strings.Replace(lis, "|"+midDec[0], "", -1)
+				}
+			}
+			result1 := httpReg.MatchString(li)
+			if !result1 {
 				panic(li + " 不符合规范请检查之后在使用")
 			}
 			// 解析接口描述
@@ -88,14 +94,18 @@ func genDef() {
 				typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(handlerStr[0])
 				hasDir, _ := utils.PathExists(typesDir)
 				if !hasDir {
-					err := os.Mkdir(typesDir, os.ModePerm)
+					err := os.Mkdir(typesDir, 0777)
 					if err != nil {
 						panic("目录初始化失败" + err.Error())
 					}
 				}
 				hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(handlerStr[1]))
 				if !hasDir1 {
-					e := os.Mkdir(typesDir+"/"+utils.Camel2Case(handlerStr[1]), os.ModePerm)
+					e := os.MkdirAll(typesDir+"/"+utils.Camel2Case(handlerStr[1]), 0777)
+					er := os.Chmod(typesDir+"/"+utils.Camel2Case(handlerStr[1]), 0777)
+					if er != nil {
+						panic("目录初始化失败" + er.Error())
+					}
 					if e != nil {
 						panic("目录初始化失败" + e.Error())
 					}
@@ -133,18 +143,7 @@ func genDef() {
 						return
 					}
 				}
-				var param = make([]string, 0)
-				for s, m := range CurrentTableInfo {
-					types := strings.Replace(m["type"], "int64", "int", -1)
-					comment := strings.Replace(strings.Replace(m["comment"], "//", "", -1), " ", "", -1)
-					if len(comment) == 0 {
-						comment = s
-					}
-					ss := "@param " + utils.Lcfirst(s) + " body " + types + " true \"" + comment + "\""
-					param = append(param, "// "+ss)
-				}
-				fmt.Println(param, "param")
-				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap, param)
+				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap)
 				fmt.Println("开始装载路由...." + utils.Camel2Case(handlerStr[0]) + handlerStr[1])
 				genRouter(module, handlerStr[0])
 				fmt.Println("http初始化成功！")
@@ -188,9 +187,24 @@ func genDef() {
 		mainFile.Close()
 		fmt.Println("新增rpc处理模式")
 	}
-	modOut := utils.RunCmd("go mod tidy", true)
-	fmt.Println(string(modOut))
-	swagOut := utils.RunCmd("swag init", true)
-	fmt.Println(string(swagOut))
-	fmt.Println("初始化完成")
+	cmd := exec.Command("go", "mod", "tidy")
+	err1 := cmd.Run()
+	if err1 != nil {
+		fmt.Println("更新mod包失败")
+		panic(err1)
+	}
+	fmt.Println("更新mod包完成")
+	cmm := exec.Command("swag", "init")
+	err2 := cmm.Run()
+	if err2 != nil {
+		fmt.Println("更新api文档失败")
+		panic(err2)
+	}
+	fmt.Println("更新api文档成功")
+	gofmt := exec.Command("gofmt", "-w", "**/*.go")
+	err3 := gofmt.Run()
+	if err3 != nil {
+		return
+	}
+	fmt.Println("项目更新完成")
 }

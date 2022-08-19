@@ -197,14 +197,18 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 			var clumnComment string
 			if v.ColumnComment != "" {
 				clumnComment = fmt.Sprintf(" // %s", v.ColumnComment)
+			} else {
+				clumnComment = "//-"
 			}
 			if len(clumnComment) > 0 {
 				clumnComment = strings.Replace(clumnComment, "\n", "", -1)
 				clumnComment = strings.Replace(clumnComment, "\r", "", -1)
+				clumnComment = strings.Replace(clumnComment, " ", "", -1)
 			}
 			if v.ColumnName != "CreateTime" && v.ColumnName != "UpdateTime" {
+				tag := "`" + strings.Replace(v.Tag, "`", "", -1) + " validate:\"required\"" + " comment:\"" + strings.Replace(clumnComment, "//", "", 1) + "\"`"
 				structContent += fmt.Sprintf("%s%s %s %s%s\n",
-					tab(depth), v.ColumnName, v.Type, v.Tag, clumnComment)
+					tab(depth), v.ColumnName, v.Type, tag, clumnComment)
 			}
 			info := make(map[string]string)
 			info["type"] = v.Type
@@ -214,7 +218,7 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 		structContent += tab(depth-1) + "}\n\n"
 		// get or delete
 		getStructContent += "type " + structName + " struct {\n"
-		getStructContent += "   Id int64  `json:\"" + "id\"`\n"
+		getStructContent += "   Id int64  `json:\"" + "id\" validate:\"required\" form:\"" + "id\"`\n"
 		getStructContent += tab(depth-1) + "}\n\n"
 
 		patchStructContent = structContent
@@ -222,61 +226,23 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 		postStructContent = patchStructContent
 		deleteStructContent = getStructContent
 
+		// res
+		getStructContentRes = postStructContent
+		putStructContentRes = getStructContentRes
+		patchStructContentRes = getStructContentRes
+		postStructContentRes = getStructContentRes
+		deleteStructContentRes = getStructContentRes
+
 		patchStructContent = strings.Replace(patchStructContent, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Req", 1)
 		putStructContent = strings.Replace(putStructContent, structName, "Put"+Case2Camel(Ucfirst(structName))+"Req", 1)
 		getStructContent = strings.Replace(getStructContent, structName, "Get"+Case2Camel(Ucfirst(structName))+"Req", 1)
 		postStructContent = strings.Replace(postStructContent, structName, "Post"+Case2Camel(Ucfirst(structName))+"Req", 1)
 		deleteStructContent = strings.Replace(deleteStructContent, structName, "Delete"+Case2Camel(Ucfirst(structName))+"Req", 1)
-		getStructContentRes = "type " + structName + " struct {\n"
-		getStructContentRes += "    Id  int64  `json:\"" + "id\"`\n"
-		getStructContentRes += tab(depth-1) + "}\n\n"
+
 		getStructContentRes = strings.Replace(getStructContentRes, structName, "Get"+Case2Camel(Ucfirst(structName))+"Res", 1)
-
-		putStructContentRes = "type " + structName + " struct {\n"
-		for _, v := range item {
-			//structContent += tab(depth) + v.ColumnName + " " + v.Type + " " + v.Tag + "\n"
-			// 字段注释
-			var clumnComment string
-			if v.ColumnComment != "" {
-				clumnComment = fmt.Sprintf(" // %s", v.ColumnComment)
-			}
-			if len(clumnComment) > 0 {
-				clumnComment = strings.Replace(clumnComment, "\n", "", -1)
-				clumnComment = strings.Replace(clumnComment, "\r", "", -1)
-			}
-			if v.ColumnName != "CreateTime" && v.ColumnName != "UpdateTime" {
-				putStructContentRes += fmt.Sprintf("%s%s %s %s%s\n",
-					tab(depth), v.ColumnName, v.Type, v.Tag, clumnComment)
-			}
-		}
-		putStructContentRes += tab(depth-1) + "}\n\n"
 		putStructContentRes = strings.Replace(putStructContentRes, structName, "Put"+Case2Camel(Ucfirst(structName))+"Res", 1)
-
-		postStructContentRes = "type " + structName + " struct {\n"
-		for _, v := range item {
-			//structContent += tab(depth) + v.ColumnName + " " + v.Type + " " + v.Tag + "\n"
-			// 字段注释
-			var clumnComment string
-			if v.ColumnComment != "" {
-				clumnComment = clumnComment + "//" + v.ColumnComment
-			}
-			if len(clumnComment) > 0 {
-				clumnComment = strings.Replace(clumnComment, "\n", "", -1)
-				clumnComment = strings.Replace(clumnComment, "\r", "", -1)
-			}
-			if v.ColumnName != "CreateTime" && v.ColumnName != "UpdateTime" {
-				postStructContentRes += fmt.Sprintf("%s%s %s %s%s\n",
-					tab(depth), v.ColumnName, v.Type, v.Tag, clumnComment)
-			}
-		}
-		postStructContentRes += tab(depth-1) + "}\n\n"
-		patchStructContentRes = postStructContentRes
-		patchStructContentRes = strings.Replace(patchStructContentRes, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Res", 1)
 		postStructContentRes = strings.Replace(postStructContentRes, structName, "Post"+Case2Camel(Ucfirst(structName))+"Res", 1)
-
-		deleteStructContentRes = "type " + structName + " struct {\n"
-		deleteStructContentRes += "  Id int64  `json:\"" + "id\"`\n"
-		deleteStructContentRes += tab(depth-1) + "}\n\n"
+		patchStructContentRes = strings.Replace(patchStructContentRes, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Res", 1)
 		deleteStructContentRes = strings.Replace(deleteStructContentRes, structName, "Delete"+Case2Camel(Ucfirst(structName))+"Res", 1)
 		// 添加 method 获取真实表名
 		if t.realNameMethod != "" {

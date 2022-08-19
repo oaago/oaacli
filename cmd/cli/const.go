@@ -25,15 +25,15 @@ var (
 	SemanticMap    = map[string]string{
 		"get":    "Get$ById",
 		"post":   "Create$",
-		"delete": "Delete$ById",
 		"put":    "Update$",
-		"patch":  "Update$",
+		"delete": "Delete$ById",
+		"patch":  "UpdateField$",
 	}
 	DecMessage = map[string]string{
 		"get":    "获取$信息",
+		"put":    "更新$信息",
 		"post":   "创建$信息",
 		"delete": "删除$信息",
-		"put":    "更新$信息",
 		"patch":  "更新$相关字段",
 	}
 	TableMap = map[string][]string{}

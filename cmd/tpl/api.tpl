@@ -1,60 +1,56 @@
 package {{.Package}}_{{.Method}}
 import (
     "encoding/json"
-    "github.com/go-playground/validator/v10"
     "github.com/oaago/cloud/logx"
-    "github.com/oaago/server/oaa/translator"
     "github.com/oaago/server/v2"
+    "github.com/oaago/server/v2/translator"
 	{{.Package}}{{.UpMethod}} "{{.Module}}/internal/service/{{.Package}}/{{.Method}}"
 )
 
-{{range $i, $method := .Upmet }}//{{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler {{range $met, $msg := $.DecMessage }}{{if eq $met $method}}
-//@Summary {{$.Dec}}
+{{range $Handler := .HandlerContent }}
+// {{$Handler.HandlerName}}
+// @Summary {{$Handler.Dec}}
 // @Schemes
-// @Description {{$msg}}{{end}}{{end}}
-// @Tags v1.0
+// @Description {{$Handler.Dec}}
+// @Tags {{$Handler.Comment}}-{{$.UpPackage}}{{$.UpMethod}}
 // @Accept json
 // @Produce json
-{{range $.Param}}{{.}}
-{{end}}// @Success 200 {object} {{$method}}{{$.UpPackage}}{{$.UpMethod}}Res
-// @Router /{{$.Package}}/{{$.Method}} [{{$method}}]
-func {{$method}}{{$.UpPackage}}{{$.UpMethod}}Handler(c *v2.Context) {
+{{- range $p := $Handler.Param}}
+{{$p}}
+{{- end}}
+// @Success 200 {object} {{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Res
+// @Router /{{$.Package}}/{{$.Method}} [{{$Handler.Method}}]
+func {{$Handler.HandlerName}}(c *v2.Context) {
 	// 实例化service
 	{{$.Package}}Srv := {{$.Package}}{{$.UpMethod}}.NewService{{$.UpPackage}}()
-	{{if eq $method "Post" "Put"}}
-	if err := c.ShouldBindJSON(&{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
-	{{else}}
-	if err := c.ShouldBind(&{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
-	{{end}}
-		// 获取validator.ValidationErrors类型的errors
-		errs, ok := err.(validator.ValidationErrors)
-		if !ok {
-			// 非validator.ValidationErrors类型错误直接返回
-			c.Return(200, nil, err.Error())
-			return
-		}
-		// validator.ValidationErrors类型错误则进行翻译
-		c.Return(200, nil, errs.Translate(translator.Trans))
-		return
+    // 绑定参数
+	{{if eq $Handler.Method "Get"}}if err := c.ShouldBindQuery(&{{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
+	{{else}} if err := c.ShouldBindJSON(&{{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Req); err != nil {
+	{{end}}c.Return(200, nil, err.Error())
+        return
 	}
+    // 再先验证
+    errs := translator.InitTrans({{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Req)
+    if errs != nil {
+        c.Return(200, nil, errs)
+        return
+    }
     // 打印相关信息
-    req, _ := json.Marshal({{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req)
-    res, _ := json.Marshal({{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res)
-    logx.Logger.Info(`{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Req: `+ string(req))
-    logx.Logger.Info(`{{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res: `+ string(res))
-	{{if eq $method "Get"}}
-	var err = {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service()
-	{{else if eq $method "Delete"}}
-	var err = {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service()
-	{{else}}
-	_, err := {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Service(){{end}}
+    req, _ := json.Marshal({{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Req)
+    res, _ := json.Marshal({{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Res)
+    logx.Logger.Info(`{{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Req: `+ string(req))
+    logx.Logger.Info(`{{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Res: `+ string(res))
+    {{if eq $Handler.Method "Get"}}
+	var err = {{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Service(){{else if eq $Handler.Method "Delete"}}
+	var err = {{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Service(){{else}}
+	_, err := {{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Service(){{end}}
 	if err != nil {
-		logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求异常", {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res, err.Error())
+		logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求异常", {{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Res, err.Error())
 		c.Return(10006)
 		return
 	}
-	logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求正常", {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res)
-	c.Return(200, {{$.Package}}Srv.{{$method}}{{$.UpPackage}}{{$.UpMethod}}Res)
+	logx.Logger.Info("{{$.UpPackage}}{{$.UpMethod}}数据请求正常", {{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Res)
+	c.Return(200, {{$.Package}}Srv.{{$Handler.Method}}{{$.UpPackage}}{{$.UpMethod}}Res)
 	return
 }
 

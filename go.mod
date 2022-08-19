@@ -3,6 +3,7 @@ module github.com/oaago/oaago
 go 1.18
 
 require (
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/oaago/cloud v0.1.7
 	github.com/pterm/pterm v0.12.42
 	github.com/spf13/cobra v0.0.5
@@ -24,7 +25,6 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
-	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gobuffalo/envy v1.7.0 // indirect
 	github.com/gobuffalo/packd v0.3.0 // indirect
 	github.com/gobuffalo/packr v1.30.1 // indirect

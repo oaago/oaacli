@@ -48,26 +48,26 @@ var NewProject = &cobra.Command{
 // 初始化必要的目录
 func initDir() {
 	fmt.Println("初始化目录")
-	os.Mkdir(ProjectUrl, os.ModePerm) //nolint:errcheck
-	os.Mkdir(ProjectUrl+"/internal", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/api", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/service", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/dao", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/model", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/router", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/consts", os.ModePerm)
-	os.Mkdir(ProjectUrl+"/internal/middleware", os.ModePerm)
+	os.Mkdir(ProjectUrl, 0777) //nolint:errcheck
+	os.Mkdir(ProjectUrl+"/internal", 0777)
+	os.Mkdir(ProjectUrl+"/internal/api", 0777)
+	os.Mkdir(ProjectUrl+"/internal/service", 0777)
+	os.Mkdir(ProjectUrl+"/internal/dao", 0777)
+	os.Mkdir(ProjectUrl+"/internal/model", 0777)
+	os.Mkdir(ProjectUrl+"/internal/router", 0777)
+	os.Mkdir(ProjectUrl+"/internal/consts", 0777)
+	os.Mkdir(ProjectUrl+"/internal/middleware", 0777)
 	if projectType == "a" {
-		os.Mkdir(ProjectUrl+"/internal/api/http", os.ModePerm)
-		os.Mkdir(ProjectUrl+"/internal/middleware/http", os.ModePerm)
-		os.Mkdir(routerPath, os.ModePerm)
-		os.Mkdir(rpcfileePath, os.ModePerm)
-		os.Mkdir(middlewarePath, os.ModePerm)
-		os.Mkdir(daoPath, os.ModePerm)
+		os.Mkdir(ProjectUrl+"/internal/api/http", 0777)
+		os.Mkdir(ProjectUrl+"/internal/middleware/http", 0777)
+		os.Mkdir(routerPath, 0777)
+		os.Mkdir(rpcfileePath, 0777)
+		os.Mkdir(middlewarePath, 0777)
+		os.Mkdir(daoPath, 0777)
 	} else if projectType == "r" {
-		os.Mkdir(ProjectUrl+"/internal/api/rpc", os.ModePerm)
-		os.Mkdir(ProjectUrl+"/internal/middleware/rpc", os.ModePerm)
-		os.Mkdir(ProjectUrl+"/rpc", os.ModePerm)
+		os.Mkdir(ProjectUrl+"/internal/api/rpc", 0777)
+		os.Mkdir(ProjectUrl+"/internal/middleware/rpc", 0777)
+		os.Mkdir(ProjectUrl+"/rpc", 0777)
 	}
 }
 

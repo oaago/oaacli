@@ -26,6 +26,7 @@ type MapHttpHandler struct {
 	Middleware      []string
 	Upmet           string
 	HandlerMapOfOne map[string]bool
+	RN              bool
 }
 
 type HttpMap struct {
@@ -80,7 +81,7 @@ func genRouter(module, pack string) {
 			}
 		}
 		methodMap := strings.Split(lis[0], ",")
-		for _, s := range methodMap {
+		for i, s := range methodMap {
 			// 判断有多少个handler 文件
 			if HandlerMapOfOne[hand[0]+hand[1]] != true {
 				HandlerMapOfOne[hand[0]+hand[1]] = true
@@ -106,13 +107,14 @@ func genRouter(module, pack string) {
 				RequestType: strings.ToUpper(s),
 				Module:      module,
 				Middleware:  Middleware,
-				Handler:     utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
+				Handler:     strings.Replace(SemanticMap[s], "$", utils.Case2Camel(utils.Ucfirst(hand[0])+utils.Ucfirst(hand[1])), 1) + "Handler",
 				HttpDir:     utils.Case2Camel(utils.Camel2Case(hand[0])),
 				Method:      hand[1],
 				UpMethod:    utils.Case2Camel(utils.Ucfirst(hand[1])),
 				Package:     hand[1],
 				UpPackage:   utils.Camel2Case(pack),
 				Upmet:       utils.Ucfirst(s),
+				RN:          i == 0,
 			})
 		}
 		if len(Middleware) != 0 {
@@ -127,6 +129,8 @@ func genRouter(module, pack string) {
 	httpMap.Module = module
 	httpMap.MapHandlerMapImport = MapHandlerMapImport
 	httpMap.HasMid = HasMid
+	os.MkdirAll(routerPath, 0777)
+	os.Chmod(routerPath, 0777)
 	httpFile, _ := os.Create(HttpRouterFile)
 	if err := tmpl.Execute(httpFile, httpMap); err != nil {
 		panic(err)
@@ -149,7 +153,7 @@ func genRpcRouter(module, handler, pack, url string) {
 		MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
 			Url:       datum.String(),
 			Module:    module,
-			Handler:   utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1]),
+			Handler:   utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1]) + "Handler",
 			Method:    hand[1],
 			UpMethod:  utils.Ucfirst(hand[1]),
 			Package:   hand[0],

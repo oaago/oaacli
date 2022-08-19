@@ -16,6 +16,7 @@ func main() {
 		Port: op.ConfigData.Server.Port,
 	}
 	http := v2.NewRouter(ops)
+	http.SetBaseUrl(op.ConfigData.Server.BasePath)
 	router.LoadRouterMapV2(http)
 	docs.SwaggerInfo.BasePath = op.ConfigData.Server.BasePath
 	http.Start()
