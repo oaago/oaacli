@@ -171,7 +171,10 @@ func GetTables(dbName string) []string {
 
 func TableStruct(dbName, tableName, path string) map[string]map[string]string {
 	tables := make(map[string]map[string]string)
-	fmt.Println("生成types dbName:" + dbName + "tableName:" + tableName + "path:" + path)
+	fmt.Println("生成types " +
+		"dbName:" + dbName + "" +
+		"tableName:" + tableName + "" +
+		"path:" + path)
 	t2t := NewTable2Struct()
 	// 个性化配置
 	t2t.Config(&T2tConfig{

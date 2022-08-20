@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	_const2 "github.com/oaago/oaago/const"
 	"log"
 	"os"
 	"os/exec"
@@ -159,12 +160,7 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 	}
 
 	// 组装struct
-	var structContent, getStructContent,
-		postStructContent, deleteStructContent,
-		putStructContent, patchStructContent,
-		getStructContentRes, postStructContentRes,
-		deleteStructContentRes, putStructContentRes,
-		patchStructContentRes string
+	var structContent, getStructContent, MapStructStr string
 	for tableRealName, item := range tableColumns {
 		// 去除前缀
 		if t.prefix != "" {
@@ -186,7 +182,7 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 		}
 		depth := 1
 
-		// 修改struct 内容
+		// 默认 struct 内容
 		structContent += "type " + structName + " struct {\n"
 		for _, v := range item {
 			//structContent += tab(depth) + v.ColumnName + " " + v.Type + " " + v.Tag + "\n"
@@ -216,34 +212,39 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 			tableInfo[v.ColumnName] = info
 		}
 		structContent += tab(depth-1) + "}\n\n"
-		// get or delete
+		// get和delete的请求
 		getStructContent += "type " + structName + " struct {\n"
 		getStructContent += "   Id int64  `json:\"" + "id\" validate:\"required\" form:\"" + "id\"`\n"
 		getStructContent += tab(depth-1) + "}\n\n"
+		for _, funcMap := range _const2.SemanticMap {
+			ReqName := strings.Replace(funcMap.FunctionName, "$", Case2Camel(Ucfirst(structName)), 1)
+			ResName := strings.Replace(funcMap.FunctionName, "$", Case2Camel(Ucfirst(structName)), 1)
+			MapStructStr = MapStructStr + strings.Replace(structContent, structName, ReqName+"Req", 1) + strings.Replace(structContent, structName, ResName+"Res", 1)
+		}
 
-		patchStructContent = structContent
-		putStructContent = patchStructContent
-		postStructContent = patchStructContent
-		deleteStructContent = getStructContent
-
-		// res
-		getStructContentRes = postStructContent
-		putStructContentRes = getStructContentRes
-		patchStructContentRes = getStructContentRes
-		postStructContentRes = getStructContentRes
-		deleteStructContentRes = getStructContentRes
-
-		patchStructContent = strings.Replace(patchStructContent, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Req", 1)
-		putStructContent = strings.Replace(putStructContent, structName, "Put"+Case2Camel(Ucfirst(structName))+"Req", 1)
-		getStructContent = strings.Replace(getStructContent, structName, "Get"+Case2Camel(Ucfirst(structName))+"Req", 1)
-		postStructContent = strings.Replace(postStructContent, structName, "Post"+Case2Camel(Ucfirst(structName))+"Req", 1)
-		deleteStructContent = strings.Replace(deleteStructContent, structName, "Delete"+Case2Camel(Ucfirst(structName))+"Req", 1)
-
-		getStructContentRes = strings.Replace(getStructContentRes, structName, "Get"+Case2Camel(Ucfirst(structName))+"Res", 1)
-		putStructContentRes = strings.Replace(putStructContentRes, structName, "Put"+Case2Camel(Ucfirst(structName))+"Res", 1)
-		postStructContentRes = strings.Replace(postStructContentRes, structName, "Post"+Case2Camel(Ucfirst(structName))+"Res", 1)
-		patchStructContentRes = strings.Replace(patchStructContentRes, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Res", 1)
-		deleteStructContentRes = strings.Replace(deleteStructContentRes, structName, "Delete"+Case2Camel(Ucfirst(structName))+"Res", 1)
+		//patchStructContent = structContent
+		//putStructContent = patchStructContent
+		//postStructContent = patchStructContent
+		//deleteStructContent = getStructContent
+		//
+		//// res
+		//getStructContentRes = postStructContent
+		//putStructContentRes = getStructContentRes
+		//patchStructContentRes = getStructContentRes
+		//postStructContentRes = getStructContentRes
+		//deleteStructContentRes = getStructContentRes
+		//
+		//patchStructContent = strings.Replace(patchStructContent, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Req", 1)
+		//putStructContent = strings.Replace(putStructContent, structName, "Put"+Case2Camel(Ucfirst(structName))+"Req", 1)
+		//getStructContent = strings.Replace(getStructContent, structName, "Get"+Case2Camel(Ucfirst(structName))+"Req", 1)
+		//postStructContent = strings.Replace(postStructContent, structName, "Post"+Case2Camel(Ucfirst(structName))+"Req", 1)
+		//deleteStructContent = strings.Replace(deleteStructContent, structName, "Delete"+Case2Camel(Ucfirst(structName))+"Req", 1)
+		//
+		//getStructContentRes = strings.Replace(getStructContentRes, structName, "Get"+Case2Camel(Ucfirst(structName))+"Res", 1)
+		//putStructContentRes = strings.Replace(putStructContentRes, structName, "Put"+Case2Camel(Ucfirst(structName))+"Res", 1)
+		//postStructContentRes = strings.Replace(postStructContentRes, structName, "Post"+Case2Camel(Ucfirst(structName))+"Res", 1)
+		//patchStructContentRes = strings.Replace(patchStructContentRes, structName, "Patch"+Case2Camel(Ucfirst(structName))+"Res", 1)
+		//deleteStructContentRes = strings.Replace(deleteStructContentRes, structName, "Delete"+Case2Camel(Ucfirst(structName))+"Res", 1)
 		// 添加 method 获取真实表名
 		if t.realNameMethod != "" {
 			structContent += fmt.Sprintf("func (%s) %s() string {\n",
@@ -273,10 +274,12 @@ func (t *Table2Struct) Run() (map[string]map[string]string, error) {
 		return nil, err
 	}
 	defer f.Close()
-	f.WriteString(packageName + importContent + getStructContent + postStructContent + deleteStructContent + putStructContent + patchStructContent + //nolint:errcheck
-		getStructContentRes + putStructContentRes + postStructContentRes + deleteStructContentRes + patchStructContentRes) //nolint:errcheck
+	f.WriteString(packageName + importContent + MapStructStr) //nolint:errcheck
 	cmd := exec.Command("gofmt", "-w", filePath)
-	cmd.Run() //nolint:errcheck
+	e := cmd.Run()
+	if e != nil {
+		return nil, e
+	} //nolint:errcheck
 	log.Println("gen model finish!!!")
 	return tableInfo, nil
 }
@@ -302,7 +305,7 @@ type column struct {
 }
 
 // Function for fetching schema definition of passed table
-func (t *Table2Struct) getColumns(table ...string) (tableColumns map[string][]column, err error) {
+func (t *Table2Struct) getColumns() (tableColumns map[string][]column, err error) {
 	// 根据设置,判断是否要把 date 相关字段替换为 string
 	if t.dateToTime == false {
 		typeForMysqlToGo["date"] = "string"

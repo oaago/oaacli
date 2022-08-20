@@ -5,8 +5,8 @@ import _ "embed"
 //go:embed api.tpl
 var ApiTPL string
 
-//go:embed httpService.tpl
-var HttpServiceTpl string
+//go:embed httpServiceHandler.tpl
+var HttpServiceHandler string
 
 //go:embed rpcService.tpl
 var RpcServiceTpl string

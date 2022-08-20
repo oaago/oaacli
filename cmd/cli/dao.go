@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/oaago/oaago/const"
 	"os"
 	"strings"
 	"text/template"
@@ -30,10 +31,10 @@ var GenDao = &cobra.Command{
 
 func genDao(dirName, fileName string, method string) {
 	//模板变量
-	filesPath := strings.ToLower(utils.Camel2Case(daoPath+"dao_"+dirName) + "/" + fileName + ".go")
+	filesPath := strings.ToLower(utils.Camel2Case(_const.DaoPath+"dao_"+dirName) + "/" + fileName + ".go")
 	exists, _ := utils.PathExists(filesPath)
 	if exists {
-		fmt.Println(daoPath + "dao_" + dirName + filesPath + "dao文件已经存在 不会继续创建")
+		fmt.Println(_const.DaoPath + "dao_" + dirName + filesPath + "dao文件已经存在 不会继续创建")
 		return
 	}
 	//模板变量
@@ -49,7 +50,7 @@ func genDao(dirName, fileName string, method string) {
 		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
 		Method:    utils.Lcfirst(method),
 		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
-		Module:    module,
+		Module:    _const.Module,
 	}
 	//创建模板
 	daoDefind := "dao"
@@ -60,7 +61,7 @@ func genDao(dirName, fileName string, method string) {
 	if err != nil {
 		panic(err)
 	}
-	daoDir := utils.Camel2Case(daoPath) + utils.Camel2Case("dao_"+dirName)
+	daoDir := utils.Camel2Case(_const.DaoPath) + utils.Camel2Case("dao_"+dirName)
 	hasDir, _ := utils.PathExists(daoDir)
 	if !hasDir {
 		err := os.Mkdir(daoDir, os.ModePerm)

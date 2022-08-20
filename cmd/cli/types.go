@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/oaago/oaago/const"
 	"os"
 	"os/exec"
 	"strings"
@@ -14,10 +15,10 @@ import (
 func genType(servicePath, dirName, method, fun, currentDBName string) {
 	//模板变量
 	var met = make([]string, 0)
-	for s, _ := range DecMessage {
-		met = append(met, utils.Ucfirst(s)+utils.Case2Camel(utils.Ucfirst(dirName))+utils.Case2Camel(utils.Ucfirst(method)))
+	for _, funcName := range _const.SemanticMap {
+		met = append(met, strings.Replace(funcName.FunctionName, "$", utils.Ucfirst(dirName)+utils.Case2Camel(utils.Ucfirst(method)), 1))
 	}
-	type Defined struct {
+	type DefinedType struct {
 		Package   string
 		UpPackage string
 		Method    string
@@ -27,7 +28,8 @@ func genType(servicePath, dirName, method, fun, currentDBName string) {
 		DBName    string
 		Module    string
 	}
-	data := Defined{
+	fmt.Println(met, "==================================met")
+	data := DefinedType{
 		Package:   utils.Camel2Case(dirName),
 		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
 		Method:    utils.Lcfirst(method),
@@ -35,7 +37,7 @@ func genType(servicePath, dirName, method, fun, currentDBName string) {
 		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
 		Met:       met,
 		DBName:    currentDBName,
-		Module:    module,
+		Module:    _const.Module,
 	}
 	//创建模板
 	defined := "types"

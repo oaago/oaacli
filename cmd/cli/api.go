@@ -4,35 +4,28 @@ import (
 	_ "embed"
 	"fmt"
 	tpl2 "github.com/oaago/oaago/cmd/tpl"
+	"github.com/oaago/oaago/const"
+	"github.com/oaago/oaago/utils"
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 	"text/template"
-
-	"github.com/oaago/oaago/utils"
 )
 
 // Api 模板变量
 type Api struct {
-	Package   string
-	UpPackage string
-	Method    string
-	UpMethod  string
-	Module    string
-	//Met        []string
-	//Param      map[string][]string
-	//Upmet      []string
-	//Dec        string
-	//DecMessage map[string]string
-	HandlerContent []HandlerContent
-}
-
-type HandlerContent struct {
-	HandlerName string
+	Package     string
+	UpPackage   string
 	Method      string
+	UpMethod    string
+	Module      string
+	HandlerName string
 	Param       []string
 	Dec         string
 	Comment     string
+	ServicePath string
+	ServiceName string
 }
 
 func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
@@ -60,7 +53,8 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 		}
 	}
 	// 根据types 获取所有文档参数
-	types := utils.Camel2Case(servicePath) + utils.Camel2Case(dirName) + "/" + utils.Camel2Case(fileName)
+	types := utils.Camel2Case(_const.ServicePath) + utils.Camel2Case(dirName) + "/" + utils.Camel2Case(fileName)
+	fmt.Println("type目录", types)
 	_, structList := utils.GetAllStruct(types)
 	var param = make(map[string][]string)
 	for s, tags := range structList {
@@ -84,75 +78,81 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 					contentType = "query"
 				}
 			}
-			str := "// @param " + paramName + " " + contentType + " " + paramType + " " + required + " \"" + comment + "\""
-			fmt.Println("structName: " + s + " param: " + str + "\r\n")
+			str := `// @param ` + paramName + " " + contentType + " " + paramType + " " + required + ` "` + comment + `"`
+			//fmt.Println("structName: " + s + " param: " + str + "\r\n")
 			param[s] = append(param[s], str)
 		}
 	}
-	// 请求类型转换
-	HandlerContentList := make([]HandlerContent, 0)
 	var Upmet = make([]string, 0)
 	for _, s := range met {
-		Upmet = append(Upmet, utils.Ucfirst(s))
-		HandlerName := strings.Replace(SemanticMap[s], "$", utils.Ucfirst(dirName)+utils.Case2Camel(utils.Ucfirst(method)), 1)
-		DecMsg := ""
-		// 增加接口描述根据配置描述接口
-		for k, msg := range DecMessage {
-			if s == k {
-				DecMsg = strings.Replace(msg, "$", dec, 1)
+		lock := sync.Mutex{}
+		for _, funcMap := range _const.SemanticMap {
+			lock.Lock()
+			if strings.ToLower(funcMap.Method) == strings.ToLower(s) {
+				Upmet = append(Upmet, utils.Ucfirst(s))
+				HandlerName := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(dirName)+utils.Case2Camel(utils.Ucfirst(method)), 1)
+				DecMsg := ""
+				// 增加接口描述根据配置描述接口
+				for k, msg := range _const.DecMessage {
+					if s == k {
+						DecMsg = strings.Replace(msg, "$", dec, 1)
+					}
+				}
+				genServer(utils.Camel2Case(utils.Lcfirst(dirName)+"/"+utils.Lcfirst(fileName)), utils.Camel2Case(utils.Lcfirst(dirName)+"_"+utils.Lcfirst(fileName)), utils.Camel2Case(fileName), HandlerName, s)
+				var Param = make([]string, 0)
+				for _, s2 := range param[HandlerName+"Req"] {
+					Param = append(Param, strings.Replace(s2, "&#34;", `"`, -1))
+				}
+				data := Api{
+					Package:     utils.Camel2Case(utils.Lcfirst(dirName) + "_" + utils.Lcfirst(fileName)),
+					UpPackage:   utils.Ucfirst(utils.Camel2Case(utils.Lcfirst(dirName) + "_" + utils.Lcfirst(fileName))),
+					UpMethod:    utils.Case2Camel(utils.Ucfirst(method)),
+					Module:      _const.Module,
+					HandlerName: HandlerName,
+					Method:      utils.Ucfirst(s),
+					Param:       param[HandlerName+"Req"],
+					Dec:         DecMsg,
+					Comment:     dec,
+					ServiceName: utils.Case2Camel(utils.Lcfirst(dirName) + "_" + utils.Lcfirst(fileName)),
+					ServicePath: utils.Camel2Case(utils.Lcfirst(dirName) + "/" + utils.Lcfirst(fileName)),
+				}
+				//创建模板
+				fmt.Println("开始api写入模版 "+fileName, param[HandlerName+"Req"])
+				api := "api"
+				tmpl := template.New(api)
+				//解析模板
+				text := tpl2.ApiTPL
+				tpl, err := tmpl.Parse(text)
+				if err != nil {
+					lock.Unlock()
+					panic(err)
+				}
+				//渲染输出
+				filesName := utils.Camel2Case(apiPath) + utils.Camel2Case(dirName) + "/" + utils.Camel2Case(fileName) + "/" + utils.Camel2Case(utils.Lcfirst(HandlerName)) + "_handler.go"
+				errs := os.MkdirAll(utils.Camel2Case(apiPath)+utils.Camel2Case(dirName)+"/"+utils.Camel2Case(fileName), 0777)
+				if errs != nil {
+					lock.Unlock()
+					panic(errs)
+				}
+				e := os.Chmod(utils.Camel2Case(apiPath)+utils.Camel2Case(dirName)+"/"+utils.Camel2Case(fileName), 0777)
+				if e != nil {
+					lock.Unlock()
+					panic(e)
+				}
+				// 生成文件 渲染模版
+				fs, _ := os.Create(filesName)
+				err = tpl.ExecuteTemplate(fs, api, data)
+				if err != nil {
+					lock.Unlock()
+					panic(err)
+				}
+				fs.Close()
+				fmt.Println(dirName + filesName + " api模版创建成功, 开始执行service 创建")
+				fmt.Println("文件已存在不再生成" + filesName)
+				cmd := exec.Command("gofmt", "-w", filesName)
+				cmd.Run() //nolint:errcheck
 			}
-		}
-		HandlerContentList = append(HandlerContentList, HandlerContent{
-			HandlerName: HandlerName + "Handler",
-			Method:      utils.Ucfirst(s),
-			Param:       param[HandlerName+"Req"],
-			Dec:         DecMsg,
-			Comment:     dec,
-		})
-	}
-	data := Api{
-		Package:        utils.Camel2Case(dirName),
-		UpPackage:      utils.Ucfirst(dirName),
-		Method:         utils.Lcfirst(method),
-		UpMethod:       utils.Case2Camel(utils.Ucfirst(method)),
-		Module:         module,
-		HandlerContent: HandlerContentList,
-	}
-	//创建模板
-	fmt.Println("开始api写入模版 " + fileName)
-	api := "api"
-	tmpl := template.New(api)
-	//解析模板
-	text := tpl2.ApiTPL
-	tpl, err := tmpl.Parse(text)
-	if err != nil {
-		panic(err)
-	}
-	//渲染输出
-	filesName := utils.Camel2Case(apiPath) + utils.Camel2Case(dirName) + "/" + utils.Camel2Case(fileName) + "/" + utils.Camel2Case(dirName) + "_" + utils.Camel2Case(fileName) + "_handler.go"
-	errs := os.MkdirAll(utils.Camel2Case(apiPath)+utils.Camel2Case(dirName)+"/"+utils.Camel2Case(fileName), 0777)
-	if errs != nil {
-		return
-	}
-	e := os.Chmod(utils.Camel2Case(apiPath)+utils.Camel2Case(dirName)+"/"+utils.Camel2Case(fileName), 0777)
-	if e != nil {
-		return
-	}
-	// 生成文件 渲染模版
-	fs, _ := os.Create(filesName)
-	err = tpl.ExecuteTemplate(fs, api, data)
-	if err != nil {
-		panic(err)
-	}
-	fs.Close()
-	fmt.Println(dirName + filesName + " api模版创建成功, 开始执行service 创建")
-	for _, s := range met {
-		s2 := SemanticMap[s]
-		if len(s2) != 0 {
-			genServer(utils.Camel2Case(dirName), fileName, fileName, s)
+			lock.Unlock()
 		}
 	}
-	cmd := exec.Command("gofmt", "-w", filesName)
-	cmd.Run() //nolint:errcheck
-	fmt.Println("文件已存在不再生成" + filesName)
 }

@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"go/ast"
 	"go/parser"
 	"go/token"
@@ -26,7 +25,7 @@ func GetAllStruct(path string) (string, map[string][]Tags) {
 	var packageName string
 	for _, s := range file {
 		packageName, structList = MapStruct(s)
-		fmt.Println(s, packageName, structList)
+		//fmt.Println(s, packageName, structList)
 	}
 	return packageName, structList
 }
@@ -72,13 +71,12 @@ func MapStruct(path string) (string, map[string][]Tags) {
 								if !structKey[key] {
 									var Tag = make(map[string]string)
 									//sf := fields.Names[0].Name + "," + nnnn.Name + "," + fields.Tag.Value
-									fmt.Println(fields.Tag.Value)
+									//fmt.Println(fields.Tag.Value)
 									tagStr := strings.Split(fields.Tag.Value, " ")
-									for i, s := range tagStr {
-										fmt.Println(i, s)
+									for _, s := range tagStr {
+										//fmt.Println(i, s)
 										ss := strings.Replace(s, "`", "", 1)
 										nss := strings.Split(ss, ":")
-										fmt.Println(nss)
 										Tag[nss[0]] = strings.Replace(nss[1], "\"", "", -1)
 									}
 									sf := Tags{

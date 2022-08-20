@@ -12,7 +12,7 @@ type {{.UpPackage}}{{.UpMethod}}Service struct {
     Dao      dao_oaauser.{{.UpPackage}}{{.UpMethod}}DaoType
 }
 
-func NewService{{.UpPackage}}() *{{.UpPackage}}{{.UpMethod}}Service {
+func NewService{{.UpPackage}}{{.UpMethod}}() *{{.UpPackage}}{{.UpMethod}}Service {
 	return &{{.UpPackage}}{{.UpMethod}}Service{
         Dao:  dao_oaauser.{{.UpPackage}}{{.UpMethod}}Dao,
 	}

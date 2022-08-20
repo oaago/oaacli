@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	tpl2 "github.com/oaago/oaago/cmd/tpl"
+	"github.com/oaago/oaago/const"
 	"os"
 	"os/exec"
 	"strings"
@@ -22,7 +23,7 @@ var NewProject = &cobra.Command{
 		}
 		utils.CLIScreen()
 		fmt.Println("开始生成项目........")
-		ProjectUrl = currentPath + args[0]
+		_const.ProjectUrl = _const.CurrentPath + args[0]
 		// 初始化目录
 		initDir()
 		// 初始化文件
@@ -48,41 +49,41 @@ var NewProject = &cobra.Command{
 // 初始化必要的目录
 func initDir() {
 	fmt.Println("初始化目录")
-	os.Mkdir(ProjectUrl, 0777) //nolint:errcheck
-	os.Mkdir(ProjectUrl+"/internal", 0777)
-	os.Mkdir(ProjectUrl+"/internal/api", 0777)
-	os.Mkdir(ProjectUrl+"/internal/service", 0777)
-	os.Mkdir(ProjectUrl+"/internal/dao", 0777)
-	os.Mkdir(ProjectUrl+"/internal/model", 0777)
-	os.Mkdir(ProjectUrl+"/internal/router", 0777)
-	os.Mkdir(ProjectUrl+"/internal/consts", 0777)
-	os.Mkdir(ProjectUrl+"/internal/middleware", 0777)
-	if projectType == "a" {
-		os.Mkdir(ProjectUrl+"/internal/api/http", 0777)
-		os.Mkdir(ProjectUrl+"/internal/middleware/http", 0777)
-		os.Mkdir(routerPath, 0777)
-		os.Mkdir(rpcfileePath, 0777)
-		os.Mkdir(middlewarePath, 0777)
-		os.Mkdir(daoPath, 0777)
-	} else if projectType == "r" {
-		os.Mkdir(ProjectUrl+"/internal/api/rpc", 0777)
-		os.Mkdir(ProjectUrl+"/internal/middleware/rpc", 0777)
-		os.Mkdir(ProjectUrl+"/rpc", 0777)
+	os.Mkdir(_const.ProjectUrl, 0777) //nolint:errcheck
+	os.Mkdir(_const.ProjectUrl+"/internal", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/api", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/service", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/dao", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/model", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/router", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/consts", 0777)
+	os.Mkdir(_const.ProjectUrl+"/internal/middleware", 0777)
+	if _const.ProjectType == "a" {
+		os.Mkdir(_const.ProjectUrl+"/internal/api/http", 0777)
+		os.Mkdir(_const.ProjectUrl+"/internal/middleware/http", 0777)
+		os.Mkdir(_const.RouterPath, 0777)
+		os.Mkdir(_const.RpcfileePath, 0777)
+		os.Mkdir(_const.MiddlewarePath, 0777)
+		os.Mkdir(_const.DaoPath, 0777)
+	} else if _const.ProjectType == "r" {
+		os.Mkdir(_const.ProjectUrl+"/internal/api/rpc", 0777)
+		os.Mkdir(_const.ProjectUrl+"/internal/middleware/rpc", 0777)
+		os.Mkdir(_const.ProjectUrl+"/rpc", 0777)
 	}
 }
 
 // 初始化文件
 func initFile(arg string) {
 	fmt.Println("初始化文件")
-	midFile, err := os.Create(ProjectUrl + "/internal/middleware/http/types.go")
+	midFile, err := os.Create(_const.ProjectUrl + "/internal/middleware/http/types.go")
 	midFile.WriteString(tpl2.MiddlewareTpl)
 	midFile.Close()
 
-	codeFile, _ := os.Create(ProjectUrl + "/internal/consts/code.go")
+	codeFile, _ := os.Create(_const.ProjectUrl + "/internal/consts/code.go")
 	codeFile.WriteString(tpl2.ConstsTpl)
 	codeFile.Close()
 
-	definedFile, _ := os.Create(ProjectUrl + "/oaa.json")
+	definedFile, _ := os.Create(_const.ProjectUrl + "/oaa.json")
 	definedFile.WriteString(tpl2.OAATpl)
 	definedFile.Close()
 
@@ -113,12 +114,12 @@ func check(arg []string) bool {
 		result = false
 	}
 	if len(arg) == 2 {
-		for _, s := range projectTypeMap {
+		for _, s := range _const.ProjectTypeMap {
 			if "-"+arg[1] == s {
-				projectType = s
+				_const.ProjectType = s
 			}
 		}
-		if projectType == "" {
+		if _const.ProjectType == "" {
 			fmt.Println("使用参数 -a 代表api项目， -r 代表rpc项目")
 		}
 	}

@@ -3,7 +3,8 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
-	tpl "github.com/oaago/oaago/cmd/tpl"
+	"github.com/oaago/oaago/cmd/tpl"
+	_const2 "github.com/oaago/oaago/const"
 	"os"
 	"os/exec"
 	"regexp"
@@ -23,24 +24,28 @@ var GenInit = &cobra.Command{
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			TableMap = utils.LoadAllTables()
-			fmt.Println(TableMap)
-			time.Sleep(3 * time.Second)
-			genDef()
+		data, err := os.ReadFile(_const2.ConfigFile)
+		if err != nil {
+			panic(err)
+			return
+		} else {
+			if len(args) == 0 {
+				_const2.TableMap = utils.LoadAllTables() //nolint:typecheck
+				fmt.Println(_const2.TableMap)            //nolint:typecheck
+				time.Sleep(3 * time.Second)
+				_const2.Module = strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1) //nolint:typecheck
+				_const2.CurrentPath = utils.GetCurrentPath()
+				genDef(data)
+			}
 		}
 	},
 }
 
-func genDef() {
-	data, err := os.ReadFile(configFile)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
+func genDef(data []byte) {
 	var mapurl map[string][]string
 	json.Unmarshal(data, &mapurl) //nolint:err check
 	// 初始化目录
-	initFile(module)
+	initFile(_const2.Module)
 	hasRpc := false
 	lock := sync.Mutex{}
 	for _, team := range mapurl {
@@ -81,17 +86,17 @@ func genDef() {
 			if strings.Contains(li, "@/") {
 				arg := strings.Split(li, "@/")
 				if arg[0] == "*" {
-					arg[0] = AllowMethods
+					arg[0] = _const2.AllowMethods
 				}
 				str := arg[1]
 				// 解析模版
 				handlerStr := strings.Split(str, "/")
-				fmt.Println(handlerStr, "路由信息")
+				//fmt.Println(handlerStr, "路由信息")
 				if len(handlerStr) > 2 {
 					hand1 := strings.Replace(str, "/", "_", -1)
 					handlerStr = []string{handlerStr[0], strings.Replace(hand1, handlerStr[0]+"_", "", 1)}
 				}
-				typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(handlerStr[0])
+				typesDir := utils.Camel2Case(_const2.ServicePath) + utils.Camel2Case(handlerStr[0])
 				hasDir, _ := utils.PathExists(typesDir)
 				if !hasDir {
 					err := os.Mkdir(typesDir, 0777)
@@ -121,31 +126,36 @@ func genDef() {
 					panic(e)
 				}
 				fs.Close()
-				if len(TableMap) > 1 {
+				if len(_const2.TableMap) > 1 {
 					fmt.Println("请输入要关联的数据库")
 					fmt.Scanln(&CurrentDBName)
 					CurrentTableInfo = utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
 				} else {
-					for s, _ := range TableMap {
+					for s, _ := range _const2.TableMap {
 						CurrentDBName = s
 					}
 					CurrentTableInfo = utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
 					fmt.Println("表名称："+handlerStr[0]+"_"+handlerStr[1], "结构：", CurrentTableInfo)
 				}
-				genType(servicePath, handlerStr[0], handlerStr[1], handlerStr[1], CurrentDBName)
 				// arg[0] 代表的是请求方法 arg[1] 请求路径
-				mothedMap := strings.Split(arg[0], ",")
-				for _, s := range mothedMap {
-					has := strings.Contains(AllowMethods, s)
+				methodMap := make([]string, 0)
+				if !strings.Contains(arg[0], ",") {
+					methodMap = []string{arg[0]}
+				} else {
+					methodMap = strings.Split(arg[0], ",")
+				}
+				for _, s := range methodMap {
+					has := strings.Contains(_const2.AllowMethods, s)
 					if !has {
 						fmt.Printf("检测出请求方式" + arg[0] + "存在" + s + "不正确 没有对应的 method\n")
 						lock.Unlock()
 						return
 					}
 				}
-				genApi(apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, mothedMap)
+				genType(_const2.ServicePath, handlerStr[0], handlerStr[1], handlerStr[1], CurrentDBName)
+				genApi(_const2.Apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, methodMap)
 				fmt.Println("开始装载路由...." + utils.Camel2Case(handlerStr[0]) + handlerStr[1])
-				genRouter(module, handlerStr[0])
+				genRouter(_const2.Module, handlerStr[0])
 				fmt.Println("http初始化成功！")
 				lock.Unlock()
 				continue
@@ -180,7 +190,7 @@ func genDef() {
 			panic(err.Error())
 		}
 		// 处理包名称
-		def := strings.Replace(tpl.MainTpl, "%package%", module, -1)
+		def := strings.Replace(tpl.MainTpl, "%package%", _const2.Module, -1)
 		// 处理是否增加rpc server
 		newTpl := strings.Replace(def, "//route.RpcServer", "route.RpcServer", 1)
 		mainFile.WriteString(newTpl) //nolint:errcheck

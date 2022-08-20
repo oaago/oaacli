@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	_const2 "github.com/oaago/oaago/const"
 	"os"
 	"os/exec"
 	"strings"
@@ -43,7 +44,7 @@ func genRouter(module, pack string) {
 	HandlerMapOfOne := map[string]bool{}
 	var httpMap HttpMap
 	var HasMid = false //是否需要中间件import
-	data, _ := os.ReadFile(configFile)
+	data, _ := os.ReadFile(_const2.ConfigFile)
 	httpData := gjson.Get(string(data), "http").Array()
 	for _, datum := range httpData {
 		lis := strings.Split(datum.String(), "@/")
@@ -57,7 +58,7 @@ func genRouter(module, pack string) {
 		}
 		// 如果是 * 代表支持所以请求方式
 		if lis[0] == "*" {
-			lis[0] = strings.Replace(lis[0], "*", AllowMethods, 1)
+			lis[0] = strings.Replace(lis[0], "*", _const2.AllowMethods, 1)
 		}
 		lim := strings.Split(lis[1], "|")
 		dir := lim[0]
@@ -80,69 +81,78 @@ func genRouter(module, pack string) {
 				Middleware = append(Middleware, lim[1]+",")
 			}
 		}
-		methodMap := strings.Split(lis[0], ",")
+		methodMap := make([]string, 0)
+		if !strings.Contains(lis[0], ",") {
+			methodMap = []string{lis[0]}
+		} else {
+			methodMap = strings.Split(lis[0], ",")
+		}
 		for i, s := range methodMap {
 			// 判断有多少个handler 文件
 			if HandlerMapOfOne[hand[0]+hand[1]] != true {
 				HandlerMapOfOne[hand[0]+hand[1]] = true
 				MapHandlerMapImport = append(MapHandlerMapImport, MapHttpHandler{
-					Url:             s + "@/" + dir,
-					RequestUrl:      "/" + dir,
-					RequestType:     strings.ToUpper(s),
 					Module:          module,
-					Middleware:      Middleware,
-					Handler:         utils.Case2Camel(utils.Ucfirst(hand[0]) + utils.Ucfirst(hand[1])),
 					HttpDir:         utils.Case2Camel(utils.Camel2Case(hand[0])),
 					Method:          hand[1],
 					UpMethod:        utils.Case2Camel(utils.Ucfirst(hand[1])),
-					Package:         hand[1],
-					UpPackage:       utils.Camel2Case(pack),
-					Upmet:           utils.Ucfirst(s),
 					HandlerMapOfOne: HandlerMapOfOne,
 				})
 			}
-			MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
-				Url:         s + "@/" + dir,
-				RequestUrl:  "/" + dir,
-				RequestType: strings.ToUpper(s),
-				Module:      module,
-				Middleware:  Middleware,
-				Handler:     strings.Replace(SemanticMap[s], "$", utils.Case2Camel(utils.Ucfirst(hand[0])+utils.Ucfirst(hand[1])), 1) + "Handler",
-				HttpDir:     utils.Case2Camel(utils.Camel2Case(hand[0])),
-				Method:      hand[1],
-				UpMethod:    utils.Case2Camel(utils.Ucfirst(hand[1])),
-				Package:     hand[1],
-				UpPackage:   utils.Camel2Case(pack),
-				Upmet:       utils.Ucfirst(s),
-				RN:          i == 0,
-			})
+			for _, funcMap := range _const2.SemanticMap {
+				if strings.ToLower(s) == strings.ToLower(funcMap.Method) {
+					urlPk := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(s)+"", 1)
+					HandlerName := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(hand[0])+utils.Case2Camel(utils.Ucfirst(hand[1])), 1)
+					MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
+						Url:         s + "@/" + dir,
+						RequestUrl:  "/" + dir + "/" + urlPk,
+						RequestType: strings.ToUpper(s),
+						Module:      module,
+						Middleware:  Middleware,
+						Handler:     HandlerName + "Handler",
+						HttpDir:     utils.Case2Camel(utils.Camel2Case(hand[0])),
+						Method:      hand[1],
+						UpMethod:    utils.Case2Camel(utils.Ucfirst(hand[1])),
+						Package:     hand[1],
+						UpPackage:   utils.Camel2Case(pack),
+						Upmet:       utils.Ucfirst(s),
+						RN:          i == 0,
+					})
+				}
+			}
 		}
 		if len(Middleware) != 0 {
 			httpMap.MiddlewareLen = len(Middleware)
 		}
 	}
-	tmpl, e := template.New("gen-http-router").Parse(strings.TrimSpace(tpl.HttpRouterTpl))
-	if e != nil {
-		panic(e.Error())
-	}
 	httpMap.MapHandlerMap = MapHandlerMap
 	httpMap.Module = module
 	httpMap.MapHandlerMapImport = MapHandlerMapImport
 	httpMap.HasMid = HasMid
-	os.MkdirAll(routerPath, 0777)
-	os.Chmod(routerPath, 0777)
-	httpFile, _ := os.Create(HttpRouterFile)
-	if err := tmpl.Execute(httpFile, httpMap); err != nil {
+	err := os.MkdirAll(_const2.RouterPath, 0777)
+	if err != nil {
 		panic(err)
 	}
-	cmd := exec.Command("gofmt", "-w", HttpRouterFile)
+	err1 := os.Chmod(_const2.RouterPath, 0777)
+	if err1 != nil {
+		panic(err1)
+	}
+	httpFile, _ := os.Create(_const2.HttpRouterFile)
+	tmpl, e := template.New("gen-http-router").Parse(strings.TrimSpace(tpl.HttpRouterTpl))
+	if e != nil {
+		panic(e.Error())
+	}
+	if err2 := tmpl.Execute(httpFile, httpMap); err != nil {
+		panic(err2)
+	}
+	cmd := exec.Command("gofmt", "-w", _const2.HttpRouterFile)
 	cmd.Run() //nolint:errcheck
 	fmt.Println("http 路由文件生成成功")
 }
 func genRpcRouter(module, handler, pack, url string) {
 	MapHandlerMap := make([]MapHttpHandler, 0)
 	var httpMap HttpMap
-	data, _ := os.ReadFile(configFile)
+	data, _ := os.ReadFile(_const2.ConfigFile)
 	RpcData := gjson.Get(string(data), "rpc").Array()
 	for _, datum := range RpcData {
 		lis := strings.Split(datum.String(), "&/")
@@ -165,7 +175,7 @@ func genRpcRouter(module, handler, pack, url string) {
 		panic(e.Error())
 	}
 	httpMap.MapHandlerMap = MapHandlerMap
-	httpFile, _ := os.Create(RpcRouterFile)
+	httpFile, _ := os.Create(_const2.RpcRouterFile)
 	if err := tmpl.Execute(httpFile, httpMap); err != nil {
 		panic(err.Error())
 	}

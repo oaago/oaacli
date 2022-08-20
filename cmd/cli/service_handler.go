@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/oaago/oaago/const"
 	"os"
 	"os/exec"
 	"strings"
@@ -12,7 +13,7 @@ import (
 )
 
 // 根据http生成路径
-func genServer(dirName, fileName, method string, met string) {
+func genServer(dirName, packageName, fileName, funcName string, met string) {
 	// 检测是否存在types
 	//typePath := strings.ToLower(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName) + "/" + "typs.go")
 	//exist, _ := utils.PathExists(typePath)
@@ -20,8 +21,18 @@ func genServer(dirName, fileName, method string, met string) {
 	//	fmt.Println("types文件不存在 将会自动生成", typePath)
 	//	genType(apiServicePath, utils.Camel2Case(dirName), fileName, utils.Lcfirst(method))
 	//}
+
+	// 检测目录
+	hasDir, _ := utils.PathExists(utils.Camel2Case(_const.ApiServicePath) + utils.Camel2Case(dirName))
+	if !hasDir {
+		e := os.MkdirAll(_const.ApiServicePath+dirName, 0777)
+		if e != nil {
+			panic(e)
+		}
+	}
 	//模板变量
-	filesPath := strings.ToLower(utils.Camel2Case(apiServicePath+dirName+"/"+fileName) + "/" + met + "_" + utils.Camel2Case(dirName) + "_" + utils.Lcfirst(method) + "_service.go")
+	filesPath := strings.ToLower(utils.Camel2Case(_const.ApiServicePath+dirName) + "/" + utils.Camel2Case(utils.Lcfirst(funcName)) + "_service.go")
+	fmt.Println("尝试创建service" + filesPath)
 	exists, _ := utils.PathExists(filesPath)
 	if exists {
 		fmt.Println("service文件已经存在 不会继续创建", filesPath)
@@ -36,10 +47,10 @@ func genServer(dirName, fileName, method string, met string) {
 		Upmet     string
 	}
 	data := Service{
-		Package:   utils.Camel2Case(dirName),
-		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
-		Method:    method,
-		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
+		Package:   packageName,
+		UpPackage: utils.Ucfirst(utils.Case2Camel(packageName)),
+		Method:    funcName,
+		UpMethod:  utils.Ucfirst(utils.Case2Camel(funcName)),
 		Met:       met,
 		Upmet:     utils.Ucfirst(met),
 	}
@@ -48,29 +59,24 @@ func genServer(dirName, fileName, method string, met string) {
 	service := "http-service"
 	tmpl := template.New(service)
 	//解析模板
-	text := tpl.HttpServiceTpl
+	text := tpl.HttpServiceHandler
 	tpl, err := tmpl.Parse(text)
 	if err != nil {
-		panic(err.Error() + "解析service模版失败")
-	}
-	//渲染输出
-	hasDir, _ := utils.PathExists(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName))
-	if !hasDir {
-		err := os.Mkdir(utils.Camel2Case(apiServicePath+dirName), 0777)
-		err = os.Mkdir(utils.Camel2Case(apiServicePath+dirName+"/"+fileName), 0777)
-		if err != nil {
-			panic("目录初始化失败" + err.Error())
-		}
+		panic(err)
 	}
 	hasFile, _ := utils.PathExists(filesPath)
 	if hasFile {
 		fmt.Println(filesPath + "文件已存在，不会继续创建")
 		return
 	}
-	fs, err := os.Create(filesPath)
-	err = tpl.ExecuteTemplate(fs, service, data)
-	if err != nil {
-		panic(err.Error())
+	fs, err1 := os.Create(filesPath)
+	fmt.Println(data, filesPath)
+	if err1 != nil {
+		panic(err1)
+	}
+	err2 := tpl.ExecuteTemplate(fs, service, data)
+	if err2 != nil {
+		panic(err2)
 	}
 	fs.Close()
 	cmd := exec.Command("gofmt", "-w", filesPath)
