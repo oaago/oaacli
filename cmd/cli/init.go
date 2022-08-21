@@ -32,7 +32,7 @@ var GenInit = &cobra.Command{
 			if len(args) == 0 {
 				_const2.TableMap = utils.LoadAllTables() //nolint:typecheck
 				fmt.Println(_const2.TableMap)            //nolint:typecheck
-				time.Sleep(3 * time.Second)
+				time.Sleep(1 * time.Second)
 				_const2.Module = strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1) //nolint:typecheck
 				_const2.CurrentPath = utils.GetCurrentPath()
 				genDef(data)
@@ -51,8 +51,6 @@ func genDef(data []byte) {
 	for _, team := range mapurl {
 		for _, lis := range team {
 			lock.Lock()
-			CurrentDBName := ""
-			CurrentTableInfo := make(map[string]map[string]string)
 			// 先验证规则是否合法
 			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9|,?A-Za-z0-9]{0,30})+\*\*.*`)
 			li := lis
@@ -126,17 +124,6 @@ func genDef(data []byte) {
 					panic(e)
 				}
 				fs.Close()
-				if len(_const2.TableMap) > 1 {
-					fmt.Println("请输入要关联的数据库")
-					fmt.Scanln(&CurrentDBName)
-					CurrentTableInfo = utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
-				} else {
-					for s, _ := range _const2.TableMap {
-						CurrentDBName = s
-					}
-					CurrentTableInfo = utils.TableStruct(CurrentDBName, handlerStr[0]+"_"+handlerStr[1], typesDir+"/"+utils.Camel2Case(handlerStr[1]))
-					fmt.Println("表名称："+handlerStr[0]+"_"+handlerStr[1], "结构：", CurrentTableInfo)
-				}
 				// arg[0] 代表的是请求方法 arg[1] 请求路径
 				methodMap := make([]string, 0)
 				if !strings.Contains(arg[0], ",") {
@@ -152,7 +139,12 @@ func genDef(data []byte) {
 						return
 					}
 				}
-				genType(_const2.ServicePath, handlerStr[0], handlerStr[1], handlerStr[1], CurrentDBName)
+				// 生成types 文件
+				CurrentDBName := ""
+				// 假设存在
+				hasTable := false
+				genTypes(CurrentDBName, handlerStr[0], handlerStr[1], hasTable)
+				genService(_const2.ServicePath, handlerStr[0], handlerStr[1], handlerStr[1], CurrentDBName, hasTable)
 				genApi(_const2.Apifilepath, handlerStr[0], handlerStr[1], handlerStr[1], dec, methodMap)
 				fmt.Println("开始装载路由...." + utils.Camel2Case(handlerStr[0]) + handlerStr[1])
 				genRouter(_const2.Module, handlerStr[0])

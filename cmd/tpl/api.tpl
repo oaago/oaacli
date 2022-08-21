@@ -20,31 +20,31 @@ import (
 // @Router /{{.ServicePath}}/{{.HandlerName}} [{{.Method}}]
 func {{.HandlerName}}Handler(c *v2.Context) {
 	// 实例化service
-	{{.Package}}Srv := {{.Package}}.NewService{{.ServiceName}}()
+	{{.ServiceName}}Srv := {{.Package}}.NewService{{.ServiceName}}()
     // 绑定参数
-	{{if eq .Method "Get"}}if err := c.ShouldBindQuery(&{{.Package}}Srv.{{.HandlerName}}Req); err != nil {
-	{{else}} if err := c.ShouldBindJSON(&{{.Package}}Srv.{{.HandlerName}}Req); err != nil {
+	{{if eq .Method "Get"}}if err := c.ShouldBindQuery(&{{.ServiceName}}Srv.{{.HandlerName}}Req); err != nil {
+	{{else}} if err := c.ShouldBindJSON(&{{.ServiceName}}Srv.{{.HandlerName}}Req); err != nil {
 	{{end}}c.Return(200, nil, err.Error())
         return
 	}
     // 再先验证
-    errs := translator.InitTrans({{.Package}}Srv.{{.HandlerName}}Req)
+    errs := translator.InitTrans({{.ServiceName}}Srv.{{.HandlerName}}Req)
     if errs != nil {
         c.Return(200, nil, errs)
         return
     }
     // 打印相关信息
-    req, _ := json.Marshal({{.Package}}Srv.{{.HandlerName}}Req)
-    res, _ := json.Marshal({{.Package}}Srv.{{.HandlerName}}Res)
-    logx.Logger.Info(`{{.Package}}Srv.{{.HandlerName}}Req: `+ string(req))
-    logx.Logger.Info(`{{.Package}}Srv.{{.HandlerName}}Res: `+ string(res))
-    var ResErr = {{.Package}}Srv.{{.HandlerName}}Service()
+    req, _ := json.Marshal({{.ServiceName}}Srv.{{.HandlerName}}Req)
+    res, _ := json.Marshal({{.ServiceName}}Srv.{{.HandlerName}}Res)
+    logx.Logger.Info(`{{.ServiceName}}Srv.{{.HandlerName}}Req: `+ string(req))
+    logx.Logger.Info(`{{.ServiceName}}Srv.{{.HandlerName}}Res: `+ string(res))
+    var ResErr = {{.ServiceName}}Srv.{{.HandlerName}}Service()
 	if ResErr != nil {
-		logx.Logger.Info("{{.UpPackage}}{{.UpMethod}}数据请求异常", {{.Package}}Srv.{{.HandlerName}}Res, ResErr.Error())
+		logx.Logger.Info("{{.UpPackage}}{{.UpMethod}}数据请求异常", {{.ServiceName}}Srv.{{.HandlerName}}Res, ResErr.Error())
 		c.Return(10006, nil, ResErr.Error())
 		return
 	}
-	logx.Logger.Info("{{.UpPackage}}{{.UpMethod}}数据请求正常", {{.Package}}Srv.{{.HandlerName}}Res)
-	c.Return(200, {{.Package}}Srv.{{.HandlerName}}Res)
+	logx.Logger.Info("{{.UpPackage}}{{.UpMethod}}数据请求正常", {{.ServiceName}}Srv.{{.HandlerName}}Res)
+	c.Return(200, {{.ServiceName}}Srv.{{.HandlerName}}Res)
 	return
 }

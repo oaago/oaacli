@@ -2,125 +2,86 @@ package cli
 
 import (
 	"fmt"
-	"github.com/oaago/oaago/const"
-	"os"
-	"os/exec"
-	"strings"
-	"text/template"
-
 	tpl2 "github.com/oaago/oaago/cmd/tpl"
+	_const2 "github.com/oaago/oaago/const"
 	"github.com/oaago/oaago/utils"
+	"html/template"
+	"os"
+	"strings"
 )
 
-func genType(servicePath, dirName, method, fun, currentDBName string) {
-	//模板变量
-	var met = make([]string, 0)
-	for _, funcName := range _const.SemanticMap {
-		met = append(met, strings.Replace(funcName.FunctionName, "$", utils.Ucfirst(dirName)+utils.Case2Camel(utils.Ucfirst(method)), 1))
+func genTypes(CurrentDBName, dirName, fileName string, hasTable bool) {
+	// 先选择数据库
+	if len(_const2.TableMap) > 1 {
+		fmt.Println("请输入要关联的数据库")
+		fmt.Scanln(&CurrentDBName)
 	}
-	type DefinedType struct {
-		Package   string
-		UpPackage string
-		Method    string
-		UpMethod  string
-		Func      string
-		Met       []string
-		DBName    string
-		Module    string
+	typesDir := utils.Camel2Case(_const2.ServicePath) + utils.Camel2Case(dirName)
+	tableName := utils.Camel2Case(dirName + "_" + fileName)
+	hasDbName := ""
+	// 搜索数据库是否存在表
+	for _, table := range _const2.TableMap[CurrentDBName] {
+		if table == tableName {
+			hasTable = true
+			hasDbName = CurrentDBName
+		}
 	}
-	fmt.Println(met, "==================================met")
-	data := DefinedType{
-		Package:   utils.Camel2Case(dirName),
-		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
-		Method:    utils.Lcfirst(method),
-		Func:      utils.Ucfirst(fun),
-		UpMethod:  utils.Case2Camel(utils.Ucfirst(method)),
-		Met:       met,
-		DBName:    currentDBName,
-		Module:    _const.Module,
+	// 如果存在
+	if hasTable {
+		utils.TableStruct(CurrentDBName, utils.Camel2Case(dirName+"_"+fileName), typesDir+"/"+utils.Camel2Case(fileName))
+		fmt.Println("表名称："+utils.Camel2Case(dirName+"_"+fileName), "结构：", hasDbName)
+		return
+	} else {
+		// 如果表不存在证明是单纯增加一个接口
+		genTypesFiles(dirName, fileName)
 	}
-	//创建模板
-	defined := "types"
-	tmpl := template.New(defined)
-	//解析模板
-	text := tpl2.HttpTypesTpl
-	tpl, err := tmpl.Parse(text)
-	if err != nil {
-		panic(err)
-	}
-	typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(dirName)
-	//渲染输出
-	hasFile, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(method) + "/service.go")
-	if hasFile {
-		fmt.Println(typesDir + "/" + utils.Camel2Case(method) + "/service.go" + "文件已存在，不会继续创建")
-	}
-	fs, e := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/service.go")
-	if e != nil {
-		fmt.Println("type 文件写入失败" + e.Error())
-	}
-	tplerr := tpl.ExecuteTemplate(fs, defined, data)
-	if tplerr != nil {
-		panic(tplerr)
-	}
-	fs.Close()
-	cmd := exec.Command("gofmt", "-w", typesDir+"/"+utils.Camel2Case(method)+"/service.go")
-	cmd.Run() //nolint:errcheck
-	fmt.Println("写入types模版成功 " + typesDir)
 }
 
-func genRpcType(servicePath, dirName, method, fun string) {
-	//模板变量
-	type Defined struct {
-		Package   string
-		UpPackage string
-		Method    string
-		UpMethod  string
-		Func      string
-		Module    string
+func genTypesFiles(dirName, fileName string) {
+	var structMap = make([]string, 0)
+	for _, funcName := range _const2.SemanticMap {
+		structName := strings.Replace(funcName.FunctionName, "$", utils.Ucfirst(dirName)+utils.Case2Camel(utils.Ucfirst(fileName)), 1)
+		structMap = append(structMap, structName+"Req", structName+"Res")
 	}
-	module := strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1)
-	data := Defined{
-		Package:   utils.Camel2Case(dirName),
-		UpPackage: utils.Case2Camel(utils.Ucfirst(dirName)),
-		Method:    utils.Lcfirst(method),
-		Func:      utils.Ucfirst(fun),
-		Module:    module,
-		UpMethod:  utils.Ucfirst(method),
+	type DefinedType struct {
+		PackageName string
+		StructMap   []string
 	}
+	var typeData = DefinedType{
+		PackageName: utils.Camel2Case(dirName + "_" + fileName),
+		StructMap:   structMap,
+	}
+
 	//创建模板
-	defined := "rpctype"
+	defined := "http-type"
 	tmpl := template.New(defined)
 	//解析模板
-	text := tpl2.RpcTypesTpl
+	text := tpl2.HttpTypes
 	tpl, err := tmpl.Parse(text)
 	if err != nil {
 		panic(err)
 	}
-	typesDir := utils.Camel2Case(servicePath) + utils.Camel2Case(dirName)
+	typesDir := utils.Camel2Case(_const2.ServicePath) + utils.Camel2Case(dirName)
 	hasDir, _ := utils.PathExists(typesDir)
 	if !hasDir {
 		err := os.Mkdir(typesDir, os.ModePerm)
-		err = os.Mkdir(typesDir+"/"+utils.Camel2Case(method), os.ModePerm)
+		err = os.Mkdir(typesDir+"/"+utils.Camel2Case(fileName), os.ModePerm)
 		if err != nil {
 			panic("目录初始化失败" + err.Error())
 		}
 	}
+	filePath := typesDir + "/" + utils.Camel2Case(fileName) + "/types.go"
+	//hasFile, _ := utils.PathExists(filePath)
+	//if hasFile {
+	//	fmt.Println(filePath + "文件已存在, 不会继续生成")
+	//	return
+	//}
 	//渲染输出
-	fs, _ := os.Create(typesDir + "/" + utils.Camel2Case(method) + "/types.go")
-	err = tpl.ExecuteTemplate(fs, defined, data)
+	fs, _ := os.Create(filePath)
+	err = tpl.ExecuteTemplate(fs, defined, typeData)
 	if err != nil {
 		panic(err)
 	}
 	fs.Close()
 	fmt.Println("写入types模版成功 " + typesDir)
-}
-
-func ValidDefined(dirName string) {
-	hasDir, _ := utils.PathExists(dirName)
-	if !hasDir {
-		err := os.Mkdir(dirName, os.ModePerm)
-		if err != nil {
-			panic("目录初始化失败" + err.Error())
-		}
-	}
 }

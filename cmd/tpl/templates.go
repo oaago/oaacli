@@ -23,8 +23,11 @@ var HttpRouterTpl string
 //go:embed rpcRouter.tpl
 var RpcRouterTpl string
 
+//go:embed httpServiceTpl.tpl
+var HttpServiceTpl string
+
 //go:embed httpTypes.tpl
-var HttpTypesTpl string
+var HttpTypes string
 
 //go:embed rpcTypes.tpl
 var RpcTypesTpl string

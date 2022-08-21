@@ -94,18 +94,19 @@ func genRouter(module, pack string) {
 				MapHandlerMapImport = append(MapHandlerMapImport, MapHttpHandler{
 					Module:          module,
 					HttpDir:         utils.Case2Camel(utils.Camel2Case(hand[0])),
-					Method:          hand[1],
+					Method:          utils.Camel2Case(utils.Lcfirst(hand[1])),
 					UpMethod:        utils.Case2Camel(utils.Ucfirst(hand[1])),
 					HandlerMapOfOne: HandlerMapOfOne,
 				})
 			}
 			for _, funcMap := range _const2.SemanticMap {
 				if strings.ToLower(s) == strings.ToLower(funcMap.Method) {
-					urlPk := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(s)+"", 1)
+					urlPk := strings.Replace(funcMap.FunctionName, "$", "", 1)
+					fmt.Println(utils.Ucfirst(s), urlPk, "urlPkurlPkurlPkurlPkurlPk")
 					HandlerName := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(hand[0])+utils.Case2Camel(utils.Ucfirst(hand[1])), 1)
 					MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
 						Url:         s + "@/" + dir,
-						RequestUrl:  "/" + dir + "/" + urlPk,
+						RequestUrl:  "/" + dir + "/" + HandlerName,
 						RequestType: strings.ToUpper(s),
 						Module:      module,
 						Middleware:  Middleware,

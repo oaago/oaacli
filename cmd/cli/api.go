@@ -98,7 +98,7 @@ func genApi(apiPath, dirName, fileName, method, dec string, met []string) {
 						DecMsg = strings.Replace(msg, "$", dec, 1)
 					}
 				}
-				genServer(utils.Camel2Case(utils.Lcfirst(dirName)+"/"+utils.Lcfirst(fileName)), utils.Camel2Case(utils.Lcfirst(dirName)+"_"+utils.Lcfirst(fileName)), utils.Camel2Case(fileName), HandlerName, s)
+				genServerHandler(utils.Camel2Case(utils.Lcfirst(dirName)+"/"+utils.Lcfirst(fileName)), utils.Camel2Case(utils.Lcfirst(dirName)+"_"+utils.Lcfirst(fileName)), utils.Camel2Case(fileName), HandlerName, s)
 				var Param = make([]string, 0)
 				for _, s2 := range param[HandlerName+"Req"] {
 					Param = append(Param, strings.Replace(s2, "&#34;", `"`, -1))

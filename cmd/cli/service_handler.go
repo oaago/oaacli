@@ -13,7 +13,7 @@ import (
 )
 
 // 根据http生成路径
-func genServer(dirName, packageName, fileName, funcName string, met string) {
+func genServerHandler(dirName, packageName, fileName, funcName string, met string) {
 	// 检测是否存在types
 	//typePath := strings.ToLower(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName) + "/" + "typs.go")
 	//exist, _ := utils.PathExists(typePath)
