@@ -14,10 +14,10 @@ import (
 
 var GenDao = &cobra.Command{
 	Use:   "dao",
-	Short: "oaacli dao name 根据name 生成dao",
+	Short: "oaago dao name 根据name 生成dao",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
-			fmt.Println("命令行错误 请检查使用方式 示例 oaacli dao user(数据库配置连接名称)@sys_user(表)")
+			fmt.Println("命令行错误 请检查使用方式 示例 oaago dao user(数据库配置连接名称)@sys_user(表)")
 			return
 		}
 		var ss = strings.Split(args[0], "@")
@@ -64,9 +64,9 @@ func genDao(dirName, fileName string, method string) {
 	daoDir := utils.Camel2Case(_const.DaoPath) + utils.Camel2Case("dao_"+dirName)
 	hasDir, _ := utils.PathExists(daoDir)
 	if !hasDir {
-		err := os.Mkdir(daoDir, os.ModePerm)
-		if err != nil {
-			panic("目录初始化失败" + err.Error())
+		errDir := os.Mkdir(daoDir, os.ModePerm)
+		if errDir != nil {
+			panic(errDir)
 		}
 	}
 	//渲染输出

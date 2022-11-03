@@ -15,7 +15,7 @@ import (
 var NewProject = &cobra.Command{
 	Use:     "new",
 	Aliases: []string{"new"},
-	Short:   "示例 oaacli new project 生成项目",
+	Short:   "示例 oaago new project 生成项目",
 	Run: func(cmd *cobra.Command, args []string) {
 		if !check(args) {
 			fmt.Println("命令行错误 请检查使用方式 示例 oaacgo new project")
@@ -33,8 +33,8 @@ var NewProject = &cobra.Command{
 		fmt.Println("创建项目 " + args[0] + " go mod init ")
 		output, _ := exec.Command("bash", "-c", "go mod init "+args[0]).Output()
 		fmt.Println(string(output))
-		fmt.Println("初始化 " + args[0] + "项目文件 oaacli init ")
-		output, _ = exec.Command("bash", "-c", "oaacli init").Output()
+		fmt.Println("初始化 " + args[0] + "项目文件 oaago init ")
+		output, _ = exec.Command("bash", "-c", "oaago init").Output()
 		fmt.Println(string(output))
 		fmt.Println("更新 " + args[0] + " 项目依赖   go mod tidy")
 		output, _ = exec.Command("go", "mod tidy").Output()
@@ -49,37 +49,35 @@ var NewProject = &cobra.Command{
 // 初始化必要的目录
 func initDir() {
 	fmt.Println("初始化目录")
-	os.Mkdir(_const.ProjectUrl, 0777) //nolint:errcheck
-	os.Mkdir(_const.ProjectUrl+"/internal", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/api", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/service", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/dao", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/model", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/router", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/consts", 0777)
-	os.Mkdir(_const.ProjectUrl+"/internal/middleware", 0777)
+	os.Mkdir(_const.ProjectUrl, os.ModePerm) //nolint:errcheck
+	_ = os.Mkdir(_const.ProjectUrl+"/internal", os.ModePerm)
+	os.MkdirAll(_const.ProjectUrl+_const.Apifilepath, os.ModePerm)
+	os.MkdirAll(_const.ProjectUrl+_const.ServicePath, os.ModePerm)
+	os.MkdirAll(_const.ProjectUrl+_const.DaoPath, os.ModePerm)
+	os.MkdirAll(_const.ProjectUrl+_const.RouterPath, os.ModePerm)
+	os.MkdirAll(_const.ProjectUrl+_const.ConstPath, os.ModePerm)
+	os.MkdirAll(_const.ProjectUrl+_const.MiddlewarePath, os.ModePerm)
 	if _const.ProjectType == "a" {
-		os.Mkdir(_const.ProjectUrl+"/internal/api/http", 0777)
-		os.Mkdir(_const.ProjectUrl+"/internal/middleware/http", 0777)
-		os.Mkdir(_const.RouterPath, 0777)
-		os.Mkdir(_const.RpcfileePath, 0777)
-		os.Mkdir(_const.MiddlewarePath, 0777)
-		os.Mkdir(_const.DaoPath, 0777)
+		os.MkdirAll(_const.ProjectUrl+_const.Apifilepath, os.ModePerm)
+		os.MkdirAll(_const.ProjectUrl+_const.MiddlewareHttpPath, os.ModePerm)
+		os.MkdirAll(_const.RouterPath, os.ModePerm)
+		os.MkdirAll(_const.MiddlewarePath, os.ModePerm)
+		os.MkdirAll(_const.DaoPath, os.ModePerm)
 	} else if _const.ProjectType == "r" {
-		os.Mkdir(_const.ProjectUrl+"/internal/api/rpc", 0777)
-		os.Mkdir(_const.ProjectUrl+"/internal/middleware/rpc", 0777)
-		os.Mkdir(_const.ProjectUrl+"/rpc", 0777)
+		os.MkdirAll(_const.ProjectUrl+_const.RpcfileePath, os.ModePerm)
+		os.MkdirAll(_const.ProjectUrl+_const.MiddlewareRpcPath, os.ModePerm)
+		os.MkdirAll(_const.ProjectUrl+"/rpc", os.ModePerm)
 	}
 }
 
 // 初始化文件
 func initFile(arg string) {
 	fmt.Println("初始化文件")
-	midFile, err := os.Create(_const.ProjectUrl + "/internal/middleware/http/types.go")
+	midFile, err := os.Create(_const.ProjectUrl + _const.MiddlewareHttpPath + "/types.go")
 	midFile.WriteString(tpl2.MiddlewareTpl)
 	midFile.Close()
 
-	codeFile, _ := os.Create(_const.ProjectUrl + "/internal/consts/code.go")
+	codeFile, _ := os.Create(_const.ProjectUrl + _const.ConstPath + "/code.go")
 	codeFile.WriteString(tpl2.ConstsTpl)
 	codeFile.Close()
 

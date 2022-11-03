@@ -101,8 +101,7 @@ func genRouter(module, pack string) {
 			}
 			for _, funcMap := range _const2.SemanticMap {
 				if strings.ToLower(s) == strings.ToLower(funcMap.Method) {
-					urlPk := strings.Replace(funcMap.FunctionName, "$", "", 1)
-					fmt.Println(utils.Ucfirst(s), urlPk, "urlPkurlPkurlPkurlPkurlPk")
+					//urlPk := strings.Replace(funcMap.FunctionName, "$", "", 1)
 					HandlerName := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(hand[0])+utils.Case2Camel(utils.Ucfirst(hand[1])), 1)
 					MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
 						Url:         s + "@/" + dir,
@@ -130,11 +129,11 @@ func genRouter(module, pack string) {
 	httpMap.Module = module
 	httpMap.MapHandlerMapImport = MapHandlerMapImport
 	httpMap.HasMid = HasMid
-	err := os.MkdirAll(_const2.RouterPath, 0777)
+	err := os.MkdirAll(_const2.RouterPath, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
-	err1 := os.Chmod(_const2.RouterPath, 0777)
+	err1 := os.Chmod(_const2.RouterPath, os.ModePerm)
 	if err1 != nil {
 		panic(err1)
 	}

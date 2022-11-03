@@ -3,7 +3,7 @@ import (
 	"github.com/oaago/server/oaa"
 	{{if .HasMid}} middleware_http "{{.Module}}/internal/middleware/http"{{end}}
     {{range $index, $item := .MapHandlerMapImport}}
-	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/{{$item.HttpDir}}/{{$item.Method}}" //{{$item}}{{end}}
+	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}{{$item.HttpDir}}{{$item.Method}}" //{{$item}}{{end}}
 )
 type ConfigRouter oaa.ConfigRouter
 

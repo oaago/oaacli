@@ -14,18 +14,10 @@ import (
 
 // 根据http生成路径
 func genServerHandler(dirName, packageName, fileName, funcName string, met string) {
-	// 检测是否存在types
-	//typePath := strings.ToLower(utils.Camel2Case(apiServicePath) + utils.Camel2Case(dirName) + "/" + "typs.go")
-	//exist, _ := utils.PathExists(typePath)
-	//if !exist {
-	//	fmt.Println("types文件不存在 将会自动生成", typePath)
-	//	genType(apiServicePath, utils.Camel2Case(dirName), fileName, utils.Lcfirst(method))
-	//}
-
 	// 检测目录
 	hasDir, _ := utils.PathExists(utils.Camel2Case(_const.ApiServicePath) + utils.Camel2Case(dirName))
 	if !hasDir {
-		e := os.MkdirAll(_const.ApiServicePath+dirName, 0777)
+		e := os.MkdirAll(_const.ApiServicePath+dirName, os.ModePerm)
 		if e != nil {
 			panic(e)
 		}
@@ -59,8 +51,8 @@ func genServerHandler(dirName, packageName, fileName, funcName string, met strin
 	service := "http-service"
 	tmpl := template.New(service)
 	//解析模板
-	text := tpl.HttpServiceHandler
-	tpl, err := tmpl.Parse(text)
+	servicetext := tpl.HttpServiceHandler
+	tpl, err := tmpl.Parse(servicetext)
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +62,6 @@ func genServerHandler(dirName, packageName, fileName, funcName string, met strin
 		return
 	}
 	fs, err1 := os.Create(filesPath)
-	fmt.Println(data, filesPath)
 	if err1 != nil {
 		panic(err1)
 	}

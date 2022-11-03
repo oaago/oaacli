@@ -24,25 +24,25 @@
 
 1. 查看所有命令详情
    ```
-   oaacli help
+   oaago help
    
    Usage:
-   oaacli [command]
+   oaago [command]
    
    Available Commands:
-   init        oaacli init 根据 defined.json 生成出来需要的项目文件，可以制定配置文件oaa.json
-   new         示例 oaacli new project 生成项目 包含了http+rpc
-   v           oaacli version 更新时间/更新版本
+   init        oaago init 根据 defined.json 生成出来需要的项目文件，可以制定配置文件oaa.json
+   new         示例 oaago new project 生成项目 包含了http+rpc
+   v           oaago version 更新时间/更新版本
    Flags:
-   -h, --help   help for oaacli
-   Use "oaacli [command] --help" for more information about a command.
+   -h, --help   help for oaago
+   Use "oaago [command] --help" for more information about a command.
    ```
 
 2. 生成新项目
    ```
-   oaacli new oaagotpl
+   oaago new oaagotpl
    cd oaagotpl
-   oaacli init
+   oaago init
    go mod tidy
    go run main.go
    ```

@@ -19,7 +19,7 @@ import (
 var GenInit = &cobra.Command{
 	Use:     "init",
 	Aliases: []string{"i"},
-	Short:   "oaacli init 根据 oaago.json 生成出来需要的项目文件， 可以制定配置文件oaago.json 别名 i 例如 oaa i",
+	Short:   "oaago init 根据 oaago.json 生成出来需要的项目文件， 可以制定配置文件oaago.json 别名 i 例如 oaa i",
 	Args: func(cmd *cobra.Command, args []string) error {
 		return nil
 	},
@@ -27,9 +27,9 @@ var GenInit = &cobra.Command{
 		data, err := os.ReadFile(_const2.ConfigFile)
 		if err != nil {
 			panic(err)
-			return
 		} else {
 			if len(args) == 0 {
+				initDir()
 				_const2.TableMap = utils.LoadAllTables() //nolint:typecheck
 				fmt.Println(_const2.TableMap)            //nolint:typecheck
 				time.Sleep(1 * time.Second)
@@ -97,15 +97,15 @@ func genDef(data []byte) {
 				typesDir := utils.Camel2Case(_const2.ServicePath) + utils.Camel2Case(handlerStr[0])
 				hasDir, _ := utils.PathExists(typesDir)
 				if !hasDir {
-					err := os.Mkdir(typesDir, 0777)
+					err := os.Mkdir(typesDir, os.ModePerm)
 					if err != nil {
 						panic("目录初始化失败" + err.Error())
 					}
 				}
 				hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(handlerStr[1]))
 				if !hasDir1 {
-					e := os.MkdirAll(typesDir+"/"+utils.Camel2Case(handlerStr[1]), 0777)
-					er := os.Chmod(typesDir+"/"+utils.Camel2Case(handlerStr[1]), 0777)
+					e := os.MkdirAll(typesDir+"/"+utils.Camel2Case(handlerStr[1]), os.ModePerm)
+					er := os.Chmod(typesDir+"/"+utils.Camel2Case(handlerStr[1]), os.ModePerm)
 					if er != nil {
 						panic("目录初始化失败" + er.Error())
 					}

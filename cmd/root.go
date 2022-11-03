@@ -11,7 +11,7 @@ var (
 	rootCmd     = &cobra.Command{
 		Use:     "oaago",
 		Aliases: []string{"oaa"},
-		Short:   "A generator for oaacli 别名:  oaa",
+		Short:   "A generator for oaago 别名:  oaa",
 	}
 )
 

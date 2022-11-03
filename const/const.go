@@ -6,24 +6,27 @@ type GenFuncMap struct {
 }
 
 var (
-	ApiServicePath = "./internal/service/"
-	DaoPath        = "./internal/dao/"
-	Module         = ""
-	ProjectUrl     = ""
-	CurrentPath    = ""
-	ProjectTypeMap = []string{"a", "r"} //a 代表api r代表rpc
-	ProjectType    = "a"
-	ConfigFile     = "./oaa.json"
-	ServicePath    = "./internal/service/"
-	Apifilepath    = "./internal/api/"
-	RpcfileePath   = "./internal/api/rpc/"
-	RouterPath     = "./internal/router/"
-	MiddlewarePath = "./internal/middleware/"
-	HttpRouterFile = "./internal/router/router-http.go"
-	RpcRouterFile  = "./internal/router/router-http.go"
-	AllowMethods   = "get,post,delete,put,patch"
-	SemanticMap    = make([]GenFuncMap, 0)
-	DecMessage     = map[string]string{
+	ApiServicePath     = "./internal/service/"
+	DaoPath            = "./internal/dao/"
+	Module             = ""
+	ProjectUrl         = ""
+	CurrentPath        = ""
+	ProjectTypeMap     = []string{"a", "r"} //a 代表api r代表rpc
+	ProjectType        = "a"
+	ConstPath          = "/internal/consts"
+	ConfigFile         = "./oaa.json"
+	ServicePath        = "./internal/service/"
+	Apifilepath        = "./internal/api/"
+	RpcfileePath       = "./internal/api/rpc/"
+	RouterPath         = "./internal/router/"
+	MiddlewarePath     = "./internal/middleware/"
+	MiddlewareHttpPath = "./internal/middleware/http"
+	MiddlewareRpcPath  = "./internal/middleware/rpc"
+	HttpRouterFile     = "./internal/router/router-http.go"
+	RpcRouterFile      = "./internal/router/router-http.go"
+	AllowMethods       = "get,post,delete,put,patch"
+	SemanticMap        = make([]GenFuncMap, 0)
+	DecMessage         = map[string]string{
 		"get":    "获取$信息",
 		"put":    "更新$信息",
 		"post":   "创建$信息",

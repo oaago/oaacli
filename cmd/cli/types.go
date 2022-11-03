@@ -64,7 +64,7 @@ func genTypesFiles(dirName, fileName string) {
 	typesDir := utils.Camel2Case(_const2.ServicePath) + utils.Camel2Case(dirName)
 	hasDir, _ := utils.PathExists(typesDir)
 	if !hasDir {
-		err := os.Mkdir(typesDir, os.ModePerm)
+		err := os.MkdirAll(typesDir, os.ModePerm)
 		err = os.Mkdir(typesDir+"/"+utils.Camel2Case(fileName), os.ModePerm)
 		if err != nil {
 			panic("目录初始化失败" + err.Error())
