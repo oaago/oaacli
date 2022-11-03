@@ -4,6 +4,7 @@ import (
 	_ "github.com/oaago/cloud/logx"
 	"github.com/oaago/cloud/op"
 	_ "github.com/oaago/cloud/preload"
+	"github.com/oaago/server/v2/app"
 	h "github.com/oaago/server/v2/http"
 	"%package%/internal/consts"
 	docs "%package%/docs"
@@ -12,7 +13,7 @@ import (
 
 func main() {
 	op.ConfigData.CodeMap = consts.CODE
-	ops := h.HttpConfig{
+	ops := app.HttpConfig{
 		Port: op.ConfigData.Server.Port,
 	}
 	http := h.NewRouter(ops)
