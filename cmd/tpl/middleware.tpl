@@ -2,20 +2,21 @@ package middleware
 
 import (
     "fmt"
-    h "github.com/oaago/server/v2/http"
+    "github.com/oaago/server/v2/types"
+    "github.com/oaago/server/v2/http/core"
 )
 
 //Pid 局部中间件
-type Pid h.PartMiddleware
+type Pid types.PartMiddleware
 
 //Gid 全局中间件
-type Gid h.GlobalMiddleware
+type Gid types.GlobalMiddleware
 
 //NewPid 局部示例
 func NewPid() Pid {
 	return Pid{}
 }
-func (Pid) TT(c *h.Context) {
+func (Pid) TT(c *types.Context) {
 	fmt.Println("PartMiddleware")
 	c.Next()
 	fmt.Println("2222")
@@ -26,7 +27,7 @@ func NewGid() Gid {
 	return Gid{}
 }
 
-func (Gid) BB(c*h.Context) {
+func (Gid) BB(c *types.Context) {
 	fmt.Println("GlobalMiddleware")
 	c.Next()
 	fmt.Println("4444")

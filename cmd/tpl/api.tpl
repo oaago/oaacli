@@ -2,7 +2,7 @@ package {{.Package}}
 import (
     "encoding/json"
     "github.com/oaago/cloud/logx"
-    "github.com/oaago/server/v2/http"
+    "github.com/oaago/server/v2/types"
     "github.com/oaago/server/v2/http/translator"
 	{{.Package}} "{{.Module}}/internal/service/{{.ServicePath}}"
 )
@@ -18,7 +18,7 @@ import (
 {{- end}}
 // @Success 200 {object} {{.HandlerName}}Res
 // @Router /{{.ServicePath}}/{{.HandlerName}} [{{.Method}}]
-func {{.HandlerName}}Handler(c *http.Context) {
+func {{.HandlerName}}Handler(c *types.Context) {
 	// 实例化service
 	{{.ServiceName}}Srv := {{.Package}}.NewService{{.ServiceName}}()
     // 绑定参数
