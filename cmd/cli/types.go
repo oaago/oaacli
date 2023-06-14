@@ -67,7 +67,7 @@ func genTypesFiles(dirName, fileName string) {
 		err := os.MkdirAll(typesDir, os.ModePerm)
 		err = os.Mkdir(typesDir+"/"+utils.Camel2Case(fileName), os.ModePerm)
 		if err != nil {
-			panic("目录初始化失败" + err.Error())
+			//panic("目录初始化失败" + err.Error())
 		}
 	}
 	filePath := typesDir + "/" + utils.Camel2Case(fileName) + "/types.go"

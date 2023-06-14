@@ -6,7 +6,6 @@ import (
 	"github.com/oaago/oaago/cmd/tpl"
 	_const2 "github.com/oaago/oaago/const"
 	"os"
-	"os/exec"
 	"regexp"
 	"strings"
 	"sync"
@@ -25,15 +24,17 @@ var GenInit = &cobra.Command{
 	},
 	Run: func(cmd *cobra.Command, args []string) {
 		data, err := os.ReadFile(_const2.ConfigFile)
+		fmt.Println(data, "config")
 		if err != nil {
 			panic(err)
 		} else {
 			if len(args) == 0 {
 				initDir()
-				_const2.TableMap = utils.LoadAllTables() //nolint:typecheck
-				fmt.Println(_const2.TableMap)            //nolint:typecheck
+				//_const2.TableMap = utils.LoadAllTables() //nolint:typecheck
+				//fmt.Println(_const2.TableMap)            //nolint:typecheck
 				time.Sleep(1 * time.Second)
-				_const2.Module = strings.Replace(string(utils.RunCmd("go list -m", true)), "\n", "", -1) //nolint:typecheck
+				cmder := utils.RunCmd("go list -m", true)
+				_const2.Module = strings.Replace(string(cmder), "\n", "", -1) //nolint:typecheck
 				_const2.CurrentPath = utils.GetCurrentPath()
 				genDef(data)
 			}
@@ -52,7 +53,7 @@ func genDef(data []byte) {
 		for _, lis := range team {
 			lock.Lock()
 			// 先验证规则是否合法
-			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9|,?A-Za-z0-9]{0,30})+\*\*.*`)
+			httpReg := regexp.MustCompile(`(get|post|put|delete|patch|\*)@(/[A-Za-z0-9|,?A-Za-z0-9]).*`)
 			li := lis
 			// 针对中间件的解析
 			if strings.Contains(lis, "|") {
@@ -99,7 +100,7 @@ func genDef(data []byte) {
 				if !hasDir {
 					err := os.Mkdir(typesDir, os.ModePerm)
 					if err != nil {
-						panic("目录初始化失败" + err.Error())
+						//panic("目录初始化失败" + err.Error())
 					}
 				}
 				hasDir1, _ := utils.PathExists(typesDir + "/" + utils.Camel2Case(handlerStr[1]))
@@ -189,23 +190,20 @@ func genDef(data []byte) {
 		mainFile.Close()
 		fmt.Println("新增rpc处理模式")
 	}
-	cmd := exec.Command("go", "mod", "tidy")
-	err1 := cmd.Run()
-	if err1 != nil {
+	cmd := utils.RunCmd("go mod tidy", true)
+	if cmd == nil {
 		fmt.Println("更新mod包失败")
-		panic(err1)
+		return
 	}
 	fmt.Println("更新mod包完成")
-	cmm := exec.Command("swag", "init")
-	err2 := cmm.Run()
-	if err2 != nil {
+	cmm := utils.RunCmd("swag init", true)
+	if cmm == nil {
 		fmt.Println("更新api文档失败")
-		panic(err2)
+		return
 	}
 	fmt.Println("更新api文档成功")
-	gofmt := exec.Command("gofmt", "-w", "**/*.go")
-	err3 := gofmt.Run()
-	if err3 != nil {
+	gofmt := utils.RunCmd("gofmt -w **/*.go", true)
+	if gofmt == nil {
 		return
 	}
 	fmt.Println("项目更新完成")

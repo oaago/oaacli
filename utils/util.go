@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
@@ -18,16 +19,24 @@ import (
 
 func RunCmd(cmd string, shell bool) []byte {
 	if shell {
-		out, err := exec.Command("bash", "-c", cmd).Output()
+		var out []byte
+		var err error
+		if runtime.GOOS == "windows" {
+			fmt.Println("Hello from Windows")
+			out, err = exec.Command("cmd", "/c", cmd).Output()
+		} else {
+			out, err = exec.Command("bash", "-c", cmd).Output()
+		}
 		if err != nil {
 			log.Fatal(err)
-			panic("some error found")
+			panic(err)
 		}
 		return out
 	}
 	out, err := exec.Command(cmd).Output()
 	if err != nil {
 		log.Fatal(err)
+		panic(err)
 	}
 	return out
 }
