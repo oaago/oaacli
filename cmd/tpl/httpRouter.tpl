@@ -1,8 +1,10 @@
 package router
 import (
-	"github.com/oaago/server/v2/http/types"
+	http "github.com/oaago/server/v2/http/core"
+	"github.com/oaago/server/v2/types"
 	swaggerfiles "github.com/swaggo/files"
-    ginSwagger "github.com/swaggo/gin-swagger"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	middlewarehttp "oaatpl/internal/middleware/http"
 	{{if .HasMid}}middlewarehttp "{{.Module}}/internal/middleware/http"{{end}}
     {{range $index, $item := .MapHandlerMapImport}}
 	{{$item.HttpDir}}{{$item.UpMethod}} "{{$item.Module}}/internal/api/{{$item.HttpDir}}/{{$item.Method}}" //{{$item}}{{end}}
@@ -18,6 +20,6 @@ func LoadRouterMapV2(h *types.HttpEngine) {
 	{{range $index, $item := .MapHandlerMap}}{{if $item.RN}}
 
 	    // {{$item.HttpDir}}{{$item.UpMethod}} {{$item.RequestUrl}}{{end}}
-	   v.{{$item.RequestType}}("{{$item.RequestUrl}}", {{range $index, $it := $item.Middleware}}types.NewHandler(Pid.{{$it}}),{{end}} http.NewHandler({{$item.HttpDir}}{{$item.UpMethod}}.{{$item.Handler}})){{end}}
+	   v.{{$item.RequestType}}("{{$item.RequestUrl}}", {{range $index, $it := $item.Middleware}}http.NewHandler(Pid.{{$it}}),{{end}} http.NewHandler({{$item.HttpDir}}{{$item.UpMethod}}.{{$item.Handler}})){{end}}
     }
 }
