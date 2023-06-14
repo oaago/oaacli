@@ -13,7 +13,7 @@ import (
 func main() {
 	application := v2app.Application{}
 	app := application.Create()
-	app.Router.SetTrustedProxies([]string{"192.168.3.191", "localhost:9932"})
+	app.Router.SetTrustedProxies([]string{"localhost:9932"})
 	app.HttpEngine.SetBaseUrl(app.Config.Server.BasePath)
 	router.LoadRouterMapV2(app.HttpEngine)
 	docs.SwaggerInfo.BasePath = app.Config.Server.BasePath

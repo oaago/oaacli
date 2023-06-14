@@ -1,6 +1,6 @@
 package router
 import (
-	http "github.com/oaago/server/v2/http/core"
+	http "github.com/oaago/server/v2/http/bootstrap"
 	"github.com/oaago/server/v2/types"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
