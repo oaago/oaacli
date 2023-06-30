@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 	_const2 "github.com/oaago/oaago/const"
 	"os"
@@ -36,6 +37,18 @@ type HttpMap struct {
 	Module              string
 	MapHandlerMapImport []MapHttpHandler
 	HasMid              bool
+}
+
+type Props struct {
+	ModuleName    string              `json:"moduleName,omitempty"`
+	Url           string              `json:"url,omitempty"`
+	Method        string              `json:"method,omitempty"`
+	FieldName     string              `json:"fieldName,omitempty"`
+	Description   string              `json:"description,omitempty"`
+	Type          string              `json:"type,omitempty"`
+	Validate      string              `json:"validate,omitempty"`
+	ValidateRules map[string][]string `json:"validateRules"`
+	TableName     string              `json:"tableName,omitempty"`
 }
 
 func genRouter(module, pack string) {
@@ -123,6 +136,48 @@ func genRouter(module, pack string) {
 		}
 		if len(Middleware) != 0 {
 			httpMap.MiddlewareLen = len(Middleware)
+		}
+	}
+	apiData := gjson.Get(string(data), "api").Array()
+	for _, datum := range apiData {
+		var li Props
+		err := json.Unmarshal([]byte(datum.String()), &li)
+		if err != nil {
+			return
+		}
+		if li.Url[0] == '/' {
+			li.Url = strings.Replace(li.Url, "/", "", 1)
+		}
+		hand := strings.Split(li.Url, "/")
+		if HandlerMapOfOne[hand[0]+hand[1]] != true {
+			HandlerMapOfOne[hand[0]+hand[1]] = true
+			MapHandlerMapImport = append(MapHandlerMapImport, MapHttpHandler{
+				Module:          module,
+				HttpDir:         utils.Case2Camel(utils.Camel2Case(hand[0])),
+				Method:          utils.Camel2Case(utils.Lcfirst(hand[1])),
+				UpMethod:        utils.Case2Camel(utils.Ucfirst(hand[1])),
+				HandlerMapOfOne: HandlerMapOfOne,
+			})
+		}
+		for _, funcMap := range _const2.SemanticMap {
+			if strings.ToLower(li.Method) == strings.ToLower(funcMap.Method) {
+				HandlerName := strings.Replace(funcMap.FunctionName, "$", utils.Ucfirst(hand[0])+utils.Case2Camel(utils.Ucfirst(hand[1])), 1)
+				MapHandlerMap = append(MapHandlerMap, MapHttpHandler{
+					Url:         li.Method + "@/" + li.Url,
+					RequestUrl:  "/" + li.Url + "/" + HandlerName,
+					RequestType: strings.ToUpper(li.Method),
+					Module:      module,
+					Middleware:  []string{},
+					Handler:     HandlerName + "Handler",
+					HttpDir:     utils.Case2Camel(utils.Camel2Case(hand[0])),
+					Method:      hand[1],
+					UpMethod:    utils.Case2Camel(utils.Ucfirst(hand[1])),
+					Package:     hand[1],
+					UpPackage:   utils.Camel2Case(pack),
+					Upmet:       utils.Ucfirst(li.Method),
+					RN:          true,
+				})
+			}
 		}
 	}
 	httpMap.MapHandlerMap = MapHandlerMap
